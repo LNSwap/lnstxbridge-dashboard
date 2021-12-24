@@ -13,7 +13,7 @@ const Home: NextPage = (props : any) => {
       </Head>
 
       <main>
-        <h1 className="text-3xl font-bold mt-3 ">
+        <h1 className="text-4xl mt-3 font-bold mt-3 ">
           Marduk admin dashboard
         </h1>
         <Swaps swaps={props.swaps} />
