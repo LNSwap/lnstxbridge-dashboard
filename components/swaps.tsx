@@ -45,6 +45,18 @@ const Swaps = (props : { swaps: SwapProps[] }) => {
       sortable: true,
     },
     {
+      name: 'Routing fee',
+      selector: (row: SwapProps) => row.routingFee,
+      maxWidth: '30px',
+      sortable: true,
+    },
+    {
+      name: 'Miner fee',
+      selector: (row: SwapProps) => row.routingFee,
+      maxWidth: '30px',
+      sortable: true,
+    },
+    {
       name: 'Pair',
       selector: (row: SwapProps) => row.pair,
       sortable: true,

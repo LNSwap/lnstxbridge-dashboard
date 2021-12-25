@@ -48,6 +48,18 @@ const ReverseSwaps = (props: any) => {
       sortable: true,
     },
     {
+      name: 'Miner fee',
+      selector: (row: ReverseSwapProps) => row.minerFee,
+      maxWidth: '30px',
+      sortable: true,
+    },
+    {
+      name: 'Miner fee onchain amount',
+      selector: (row: ReverseSwapProps) => row.minerFeeOnchainAmount,
+      maxWidth: '30px',
+      sortable: true,
+    },
+    {
       name: 'Pair',
       selector: (row: ReverseSwapProps) => row.pair,
       sortable: true,
