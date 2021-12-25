@@ -100,12 +100,15 @@ const ReverseSwaps = (props: any) => {
 
 
   return (
-    <div>
-      <div className="max-w-7xl m-auto mt-5">
-        <h1 className="text-3xl mt-2 ml-2">Reverse Swaps</h1>
-        <DataTable dense pagination columns={columns} data={props.reverseSwaps} highlightOnHover conditionalRowStyles={conditionalRowStyles}/>
+  <div className="bg-white shadow rounded-lg p-4 sm:p-6 xl:p-8  2xl:col-span-2">
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex-shrink-0">
+        <span className="text-2xl sm:text-3xl leading-none font-bold text-gray-900">Reverse Swaps</span>
+        <h3 className="text-base font-normal text-gray-500">Recent reverse swaps</h3>
       </div>
     </div>
+    <DataTable dense pagination columns={columns} data={props.reverseSwaps} highlightOnHover conditionalRowStyles={conditionalRowStyles}/>
+  </div>
   );
 
 };
