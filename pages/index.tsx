@@ -140,7 +140,8 @@ const Home: NextPage = (props: any) => {
 // fetch data from server /admin/swaps and parse data into array of SwapProps and return as props
 // fetch data from server /admin/swaps/reverse and parse data into array of ReverseSwapProps and return as props
 
-export async function getServerSideProps(): Promise<{
+export async function getServerSideProps(context : any): Promise<{
+
   props: {
     swaps: SwapProps[],
     reverseSwaps: ReverseSwapProps[],
@@ -149,11 +150,15 @@ export async function getServerSideProps(): Promise<{
     rbtcWalletBalance: string
   }
 }> {
-  const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps').then(res => res.json());
-  const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps/reverse').then(res => res.json());
-  const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/status').then(res => res.text());
-  const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/lnd/balance').then(res => res.text());
-  const rbtcWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/rbtc/balance').then(res => res.text());
+  const username = 'admin';
+  const password = 'admin';
+  const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+  const headers = {headers: {'Authorization' : auth}};
+  const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps', headers ).then(res => res.json());
+  const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps/reverse', headers).then(res => res.json());
+  const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/status', headers).then(res => res.text());
+  const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/lnd/balance', headers).then(res => res.text());
+  const rbtcWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/rbtc/balance', headers).then(res => res.text());
 
   console.log(swaps);
   console.log(reverseSwaps);
