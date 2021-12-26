@@ -4,6 +4,8 @@ import Swaps, {SwapProps} from "../components/swaps";
 import ReverseSwaps, {ReverseSwapProps} from "../components/reverseSwaps";
 import Card from "../components/card";
 import {useEffect, useState} from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 const Home: NextPage = () => {
 
@@ -157,7 +159,7 @@ const Home: NextPage = () => {
                       </form>
                     </li>
                     <li>
-                      <a href="/"
+                      <a href="#"
                          className="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 group">
                         <svg className="w-6 h-6 text-gray-500 group-hover:text-gray-900 transition duration-75"
                              fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -169,7 +171,7 @@ const Home: NextPage = () => {
                     </li>
                   </ul>
                   <div className="space-y-2 pt-2">
-                    <a href="https://github.com/grmkris/marduk-admin-backend" target="_blank"
+                    <a href="https://github.com/grmkris/marduk-admin-backend"
                        className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 group transition duration-75 flex items-center p-2">
                       <svg
                         className="w-6 h-6 text-gray-500 flex-shrink-0 group-hover:text-gray-900 transition duration-75"
