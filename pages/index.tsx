@@ -3,8 +3,84 @@ import Head from 'next/head'
 import Swaps, {SwapProps} from "../components/swaps";
 import ReverseSwaps, {ReverseSwapProps} from "../components/reverseSwaps";
 import Card from "../components/card";
+import {useEffect, useState} from "react";
 
-const Home: NextPage = (props: any) => {
+const Home: NextPage = () => {
+
+  const [dashboardData, setDashboardData] = useState<{
+    swaps: SwapProps[],
+    reverseSwaps: ReverseSwapProps[]
+    status: string
+    lndWalletBalance: string
+    rbtcWalletBalance: string
+  }>({
+    swaps: [],
+    reverseSwaps: [],
+    status : '',
+    lndWalletBalance : '',
+    rbtcWalletBalance : '',
+  });
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    if (loggedIn) {
+      getData().then(data => {
+        setDashboardData(data);
+      });
+    }
+  }, [username, password, loggedIn])
+
+  const getData = async () => {
+      const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+      const headers = {headers: {'Authorization' : auth}};
+      const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps', headers ).then(res => res.json());
+      const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps/reverse', headers).then(res => res.json());
+      const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/status', headers).then(res => res.text());
+      const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/lnd/balance', headers).then(res => res.text());
+      const rbtcWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/rbtc/balance', headers).then(res => res.text());
+
+      console.log(swaps);
+      console.log(reverseSwaps);
+      console.log(status);
+      return {
+          swaps: swaps,
+          reverseSwaps: reverseSwaps,
+          status: status,
+          lndWalletBalance: lndWalletBalance,
+          rbtcWalletBalance: rbtcWalletBalance
+      }
+  };
+
+  if (loggedIn == false) {
+    return (
+      <div className="m-auto mt-40 max-w-2xl">
+          <div className="mb-6">
+            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Username</label>
+            <input type="email" id="email"
+                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   placeholder="username" required
+            onChange={event => {
+              setUsername(event.target.value);
+            }}/>
+          </div>
+          <div className="mb-6">
+            <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Password</label>
+            <input type="password" id="password"
+                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                   required onChange={event => {setPassword(event.target.value)}}/>
+          </div>
+          <button type="submit" onClick={() => {setLoggedIn(true)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Login
+          </button>
+      </div>
+    )
+  }
+
   return (
     <div>
       <Head>
@@ -113,17 +189,17 @@ const Home: NextPage = (props: any) => {
             <main>
               <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-4">
-                  <Card status={props.status} name="Status"/>
+                  <Card status={dashboardData.status} name="Status"/>
                   <div className="w-full grid grid-cols-2 gap-4">
-                    <Card status={props.lndWalletBalance} name="LND Balance"/>
-                    <Card status={props.rbtcWalletBalance} name="RBTC Balance"/>
+                    <Card status={dashboardData.lndWalletBalance} name="LND Balance"/>
+                    <Card status={dashboardData.rbtcWalletBalance} name="RBTC Balance"/>
                   </div>
                 </div>
               </div>
               <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-1 2xl:grid-cols-1 gap-4">
-                  <Swaps swaps={props.swaps}/>
-                  <ReverseSwaps reverseSwaps={props.reverseSwaps}/>
+                  <Swaps swaps={dashboardData.swaps}/>
+                  <ReverseSwaps reverseSwaps={dashboardData.reverseSwaps}/>
                 </div>
               </div>
             </main>
@@ -137,41 +213,6 @@ const Home: NextPage = (props: any) => {
   )
 }
 
-// fetch data from server /admin/swaps and parse data into array of SwapProps and return as props
-// fetch data from server /admin/swaps/reverse and parse data into array of ReverseSwapProps and return as props
 
-export async function getServerSideProps(context : any): Promise<{
-
-  props: {
-    swaps: SwapProps[],
-    reverseSwaps: ReverseSwapProps[],
-    status: string,
-    lndWalletBalance: string,
-    rbtcWalletBalance: string
-  }
-}> {
-  const username = 'admin';
-  const password = 'admin';
-  const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
-  const headers = {headers: {'Authorization' : auth}};
-  const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps', headers ).then(res => res.json());
-  const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps/reverse', headers).then(res => res.json());
-  const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/status', headers).then(res => res.text());
-  const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/lnd/balance', headers).then(res => res.text());
-  const rbtcWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/rbtc/balance', headers).then(res => res.text());
-
-  console.log(swaps);
-  console.log(reverseSwaps);
-  console.log(status);
-  return {
-    props: {
-      swaps: swaps,
-      reverseSwaps: reverseSwaps,
-      status: status,
-      lndWalletBalance: lndWalletBalance,
-      rbtcWalletBalance: rbtcWalletBalance
-    },
-  };
-}
 
 export default Home
