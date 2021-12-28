@@ -38,11 +38,11 @@ const Home: NextPage = () => {
   const getData = async () => {
       const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
       const headers = {headers: {'Authorization' : auth}};
-      const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps', headers ).then(res => res.json());
-      const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/swaps/reverse', headers).then(res => res.json());
-      const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/status', headers).then(res => res.text());
-      const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/lnd/balance', headers).then(res => res.text());
-      const rbtcWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + 'admin/rbtc/balance', headers).then(res => res.text());
+      const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps', headers ).then(res => res.json());
+      const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
+      const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/status', headers).then(res => res.text());
+      const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance', headers).then(res => res.text());
+      const rbtcWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/rbtc/balance', headers).then(res => res.text());
 
       console.log(swaps);
       console.log(reverseSwaps);
