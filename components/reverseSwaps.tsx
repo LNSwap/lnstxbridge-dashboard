@@ -73,7 +73,7 @@ const ReverseSwaps = (props: any) => {
     },
     {
       name: 'Transaction Id',
-      selector: (row: ReverseSwapProps) => row.transactionId,
+      selector: (row: ReverseSwapProps) => "https://explorer.rsk.co/address/" + row.transactionId,
       maxWidth: '150px',
       sortable: true,
     },

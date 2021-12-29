@@ -14,13 +14,13 @@ const Home: NextPage = () => {
     reverseSwaps: ReverseSwapProps[]
     status: string
     lndWalletBalance: string
-    rbtcWalletBalance: string
+    rbtcWalletBalance: {value: string, walletName: string, address: string}[]
   }>({
     swaps: [],
     reverseSwaps: [],
     status : '',
     lndWalletBalance : '',
-    rbtcWalletBalance : '',
+    rbtcWalletBalance : []
   });
 
   const [username, setUsername] = useState('');
@@ -42,17 +42,15 @@ const Home: NextPage = () => {
       const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
       const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/status', headers).then(res => res.text());
       const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance', headers).then(res => res.text());
-      const rbtcWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/rbtc/balance', headers).then(res => res.text());
+      const rbtcWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/rsk/balance', headers).then(res => res.json());
 
-      console.log(swaps);
-      console.log(reverseSwaps);
-      console.log(status);
+      console.log(rbtcWalletBalances);
       return {
           swaps: swaps,
           reverseSwaps: reverseSwaps,
           status: status,
           lndWalletBalance: lndWalletBalance,
-          rbtcWalletBalance: rbtcWalletBalance
+          rbtcWalletBalance: rbtcWalletBalances
       }
   };
 
@@ -194,7 +192,14 @@ const Home: NextPage = () => {
                   <Card status={dashboardData.status} name="Status"/>
                   <div className="w-full grid grid-cols-2 gap-4">
                     <Card status={dashboardData.lndWalletBalance} name="LND Balance"/>
-                    <Card status={dashboardData.rbtcWalletBalance} name="RBTC Balance"/>
+                    {
+                      dashboardData.rbtcWalletBalance ?
+                        dashboardData.rbtcWalletBalance.map(item => {
+                          return <Card status={item.value} name={item.walletName} address={item.address}/>
+                        })
+                      : null
+                    }
+                  {/*  <Card status={dashboardData.rbtcWalletBalance} name="RBTC Balance"/> */}
                   </div>
                 </div>
               </div>
