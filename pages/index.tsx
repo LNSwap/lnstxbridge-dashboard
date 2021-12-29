@@ -195,7 +195,7 @@ const Home: NextPage = () => {
                     {
                       dashboardData.rbtcWalletBalance ?
                         dashboardData.rbtcWalletBalance.map(item => {
-                          return <Card status={item.value} name={item.walletName} address={item.address}/>
+                          return <Card key={item.walletName} status={item.value} name={item.walletName} address={item.address}/>
                         })
                       : null
                     }
