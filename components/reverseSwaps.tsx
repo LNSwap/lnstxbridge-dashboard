@@ -73,8 +73,9 @@ const ReverseSwaps = (props: any) => {
     },
     {
       name: 'Transaction Id',
-      selector: (row: ReverseSwapProps) => "https://explorer.rsk.co/address/" + row.transactionId,
-      maxWidth: '150px',
+      cell: (row: ReverseSwapProps) => row.transactionId ? <a className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" href={"https://explorer.rsk.co/tx/" + row.transactionId}>{row.transactionId.substring(0, 7) + "..."}</a> : null,
+      maxWidth: '500px',
+      minWidth: '200px',
       sortable: true,
     },
     {
