@@ -26,6 +26,8 @@ export interface ReverseSwapProps {
   onchainAmount: number;
   transactionId: string;
   transactionVout: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ReverseSwaps = (props: any) => {
@@ -94,6 +96,18 @@ const ReverseSwaps = (props: any) => {
       name: 'Timeout Block Height',
       selector: (row: ReverseSwapProps) => row.timeoutBlockHeight,
       maxWidth: '150px',
+      sortable: true,
+    },
+    {
+      name: 'Updated at',
+      selector: (row: ReverseSwapProps) => row.updatedAt.toString(),
+      minWidth: '200px',
+      sortable: true,
+    },
+    {
+      name: 'Created at',
+      selector: (row: ReverseSwapProps) => row.createdAt.toString(),
+      minWidth: '200px',
       sortable: true,
     }
   ];

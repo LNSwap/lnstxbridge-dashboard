@@ -22,7 +22,9 @@ export interface SwapProps {
   lockupAddress: string;
   lockupTransactionId: string;
   lockupTransactionVout: number;
-};
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const Swaps = (props : { swaps: SwapProps[] }) => {
 
@@ -91,6 +93,18 @@ const Swaps = (props : { swaps: SwapProps[] }) => {
       name: 'Timeout Block Height',
       selector: (row: SwapProps) => row.timeoutBlockHeight,
       maxWidth: '150px',
+      sortable: true,
+    },
+    {
+      name: 'Updated at',
+      selector: (row: SwapProps) => row.updatedAt.toString(),
+      minWidth: '200px',
+      sortable: true,
+    },
+    {
+      name: 'Created at',
+      selector: (row: SwapProps) => row.createdAt.toString(),
+      minWidth: '200px',
       sortable: true,
     }
   ];
