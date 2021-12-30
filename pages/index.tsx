@@ -5,7 +5,7 @@ import ReverseSwaps, {ReverseSwapProps} from "../components/reverseSwaps";
 import Card from "../components/card";
 import {useEffect, useState} from "react";
 import Image from "next/image";
-import Link from "next/link";
+import loading from "../public/loading.jpeg";
 
 const Home: NextPage = () => {
 
@@ -23,6 +23,7 @@ const Home: NextPage = () => {
     rbtcWalletBalance : []
   });
 
+  const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
@@ -31,6 +32,7 @@ const Home: NextPage = () => {
     if (loggedIn) {
       getData().then(data => {
         setDashboardData(data);
+        setIsLoading(false);
       });
     }
   }, [username, password, loggedIn])
@@ -81,6 +83,18 @@ const Home: NextPage = () => {
     )
   }
 
+  if (isLoading == true) {
+    return (
+      <div className="m-auto mt-40 max-w-2xl">
+        <div className="text-center">
+          <div className="text-xl font-bold text-gray-900 dark:text-gray-300">
+            Loading...
+          </div>
+          <Image src={loading} alt="loading" className="w-64 h-64"/>
+        </div>
+      </div>
+    )
+  }
   return (
     <div>
       <Head>
