@@ -14,12 +14,14 @@ const Home: NextPage = () => {
     reverseSwaps: ReverseSwapProps[]
     status: string
     lndWalletBalance: string
+    lndOnchainBalance: string
     rbtcWalletBalance: {value: string, walletName: string, address: string}[]
   }>({
     swaps: [],
     reverseSwaps: [],
     status : '',
     lndWalletBalance : '',
+    lndOnchainBalance: '',
     rbtcWalletBalance : []
   });
 
@@ -43,16 +45,17 @@ const Home: NextPage = () => {
       const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps', headers ).then(res => res.json());
       const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
       const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/status', headers).then(res => res.text());
-      const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance', headers).then(res => res.text());
+      const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.text());
       const rbtcWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/rsk/balance', headers).then(res => res.json());
+      const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.text());
 
-      console.log(rbtcWalletBalances);
       return {
           swaps: swaps,
           reverseSwaps: reverseSwaps,
           status: status,
           lndWalletBalance: lndWalletBalance,
-          rbtcWalletBalance: rbtcWalletBalances
+          rbtcWalletBalance: rbtcWalletBalances,
+          lndOnchainBalance: lndOnchainBalance
       }
   };
 
@@ -206,6 +209,7 @@ const Home: NextPage = () => {
                   <Card status={dashboardData.status} name="Status"/>
                   <div className="w-full grid grid-cols-2 gap-4">
                     <Card status={dashboardData.lndWalletBalance} name="LND Balance"/>
+                    <Card status={dashboardData.lndOnchainBalance} name="LND Onchain Balance"/>
                     {
                       dashboardData.rbtcWalletBalance ?
                         dashboardData.rbtcWalletBalance.map(item => {
