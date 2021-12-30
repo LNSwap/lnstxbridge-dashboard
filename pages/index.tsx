@@ -216,9 +216,9 @@ const Home: NextPage = () => {
                     <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Last error:</b>  {JSON.parse(dashboardData.status).lastError}</p>
                   </div>
 
-                  <div className="w-full grid grid-cols-2 gap-4">
-                    <Card status={dashboardData.lndWalletBalance} name="LND Balance"/>
-                    <Card status={dashboardData.lndOnchainBalance} name="LND Onchain Balance"/>
+                  <div className="w-full grid grid-cols-3 gap-4">
+                    <Card status={dashboardData.lndWalletBalance} name="Lightning"/>
+                    <Card status={dashboardData.lndOnchainBalance} name="Lightning onchain"/>
                     {
                       dashboardData.rbtcWalletBalance ?
                         dashboardData.rbtcWalletBalance.map(item => {
