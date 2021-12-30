@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Swaps, {SwapProps} from "../components/swaps";
 import ReverseSwaps, {ReverseSwapProps} from "../components/reverseSwaps";
 import Card from "../components/card";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import Image from "next/image";
 import loading from "../public/loading.jpeg";
 
@@ -206,7 +206,16 @@ const Home: NextPage = () => {
             <main>
               <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-4">
-                  <Card status={dashboardData.status} name="Status"/>
+                  <div
+                    className="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Service information</h5>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Balancing status:</b> {JSON.parse(dashboardData.status).balancingStatus}</p>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Balancing mode:</b>  {JSON.parse(dashboardData.status).balancinModeEnum}</p>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Amount:</b>  {JSON.parse(dashboardData.status).amount}</p>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Status:</b>  {JSON.parse(dashboardData.status).status}</p>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Last error:</b>  {JSON.parse(dashboardData.status).lastError}</p>
+                  </div>
+
                   <div className="w-full grid grid-cols-2 gap-4">
                     <Card status={dashboardData.lndWalletBalance} name="LND Balance"/>
                     <Card status={dashboardData.lndOnchainBalance} name="LND Onchain Balance"/>
