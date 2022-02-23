@@ -13,15 +13,15 @@ const Home: NextPage = () => {
     swaps: SwapProps[],
     reverseSwaps: ReverseSwapProps[]
     status: string
-    lndWalletBalance: string
-    lndOnchainBalance: string
+    lndWalletBalance: {data: {data: string}}
+    lndOnchainBalance: {data: {data: string}}
     stacksWalletBalance: {value: string, walletName: string, address: string}[]
   }>({
     swaps: [],
     reverseSwaps: [],
     status : '',
-    lndWalletBalance : '',
-    lndOnchainBalance: '',
+    lndWalletBalance : {data: {data: ''}},
+    lndOnchainBalance: {data: {data: ''}},
     stacksWalletBalance : []
   });
 
@@ -44,10 +44,11 @@ const Home: NextPage = () => {
       const headers = {headers: {'Authorization' : auth}};
       const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps', headers ).then(res => res.json());
       const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
-      const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/status', headers).then(res => res.text());
-      const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.text());
+      const status: string = 'balancer is on demand'
+      // await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer', headers).then(res => res.text());
+      const lndWalletBalance: {data: {data: ''}} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
       const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
-      const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.text());
+      const lndOnchainBalance: {data: {data: ''}} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
 
       return {
           swaps: swaps,
@@ -206,7 +207,7 @@ const Home: NextPage = () => {
             <main>
               <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-4">
-                  <div
+                  {/* <div
                     className="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                     <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Service information</h5>
                     <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Balancing status:</b> {JSON.parse(dashboardData.status).balancingStatus}</p>
@@ -214,11 +215,11 @@ const Home: NextPage = () => {
                     <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Amount:</b>  {JSON.parse(dashboardData.status).amount}</p>
                     <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Status:</b>  {JSON.parse(dashboardData.status).status}</p>
                     <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Last error:</b>  {JSON.parse(dashboardData.status).lastError}</p>
-                  </div>
+                  </div> */}
 
                   <div className="w-full grid grid-cols-3 gap-4">
-                    <Card status={dashboardData.lndWalletBalance} name="Lightning"/>
-                    <Card status={dashboardData.lndOnchainBalance} name="Lightning onchain"/>
+                    <Card status={dashboardData.lndWalletBalance.data.data} name="Lightning"/>
+                    <Card status={dashboardData.lndOnchainBalance.data.data} name="Lightning onchain"/>
                     {
                       dashboardData.stacksWalletBalance ?
                         dashboardData.stacksWalletBalance.map(item => {
