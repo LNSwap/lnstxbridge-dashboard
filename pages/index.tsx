@@ -15,14 +15,14 @@ const Home: NextPage = () => {
     status: string
     lndWalletBalance: string
     lndOnchainBalance: string
-    rbtcWalletBalance: {value: string, walletName: string, address: string}[]
+    stacksWalletBalance: {value: string, walletName: string, address: string}[]
   }>({
     swaps: [],
     reverseSwaps: [],
     status : '',
     lndWalletBalance : '',
     lndOnchainBalance: '',
-    rbtcWalletBalance : []
+    stacksWalletBalance : []
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +46,7 @@ const Home: NextPage = () => {
       const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
       const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/status', headers).then(res => res.text());
       const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.text());
-      const rbtcWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
+      const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
       const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.text());
 
       return {
@@ -54,7 +54,7 @@ const Home: NextPage = () => {
           reverseSwaps: reverseSwaps,
           status: status,
           lndWalletBalance: lndWalletBalance,
-          rbtcWalletBalance: rbtcWalletBalances,
+          stacksWalletBalance: stacksWalletBalances,
           lndOnchainBalance: lndOnchainBalance
       }
   };
@@ -220,13 +220,13 @@ const Home: NextPage = () => {
                     <Card status={dashboardData.lndWalletBalance} name="Lightning"/>
                     <Card status={dashboardData.lndOnchainBalance} name="Lightning onchain"/>
                     {
-                      dashboardData.rbtcWalletBalance ?
-                        dashboardData.rbtcWalletBalance.map(item => {
+                      dashboardData.stacksWalletBalance ?
+                        dashboardData.stacksWalletBalance.map(item => {
                           return <Card key={item.walletName} status={item.value} name={item.walletName} address={item.address}/>
                         })
                       : null
                     }
-                  {/*  <Card status={dashboardData.rbtcWalletBalance} name="RBTC Balance"/> */}
+                  {/*  <Card status={dashboardData.stacksWalletBalance} name="Stacks Balance"/> */}
                   </div>
                 </div>
               </div>
