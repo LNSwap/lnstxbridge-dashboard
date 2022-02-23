@@ -46,7 +46,7 @@ const Home: NextPage = () => {
       const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
       const status: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/status', headers).then(res => res.text());
       const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.text());
-      const rbtcWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/rsk/balance', headers).then(res => res.json());
+      const rbtcWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
       const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.text());
 
       return {
@@ -102,8 +102,8 @@ const Home: NextPage = () => {
     <div>
       <Head>
         <title>Admin dashboard</title>
-        <meta name="description" content="Marduk Admin dashboard"/>
-        <link rel="icon" href="/marduk.png"/>
+        <meta name="description" content="LN-STX Bridge Admin dashboard"/>
+        <link rel="icon" href="/dashboard.png"/>
       </Head>
 
       <div>
@@ -127,9 +127,9 @@ const Home: NextPage = () => {
                   </svg>
                 </button>
                 <a href="" className="text-xl font-bold flex items-center lg:ml-2.5">
-                  <img src="/marduk.png" className="h-6 mr-2"
+                  <img src="/dashboard.png" className="h-6 mr-2"
                        alt="Windster Logo"/>
-                  <span className="self-center whitespace-nowrap">Marduk admin</span>
+                  <span className="self-center whitespace-nowrap">LNSTX Bridge admin</span>
                 </a>
               </div>
               <div className="flex items-center">
