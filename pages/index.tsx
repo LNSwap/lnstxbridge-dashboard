@@ -13,15 +13,15 @@ const Home: NextPage = () => {
     swaps: SwapProps[],
     reverseSwaps: ReverseSwapProps[]
     status: string
-    lndWalletBalance: {data: {data: string}}
-    lndOnchainBalance: {data: {data: string}}
+    lndWalletBalance: string
+    lndOnchainBalance: string
     stacksWalletBalance: {value: string, walletName: string, address: string}[]
   }>({
     swaps: [],
     reverseSwaps: [],
     status : '',
-    lndWalletBalance : {data: {data: ''}},
-    lndOnchainBalance: {data: {data: ''}},
+    lndWalletBalance : '',
+    lndOnchainBalance: '',
     stacksWalletBalance : []
   });
 
@@ -46,9 +46,9 @@ const Home: NextPage = () => {
       const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
       const status: string = 'balancer is on demand'
       // await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer', headers).then(res => res.text());
-      const lndWalletBalance: {data: {data: ''}} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
+      const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
       const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
-      const lndOnchainBalance: {data: {data: ''}} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
+      const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
 
       return {
           swaps: swaps,
@@ -218,8 +218,8 @@ const Home: NextPage = () => {
                   </div> */}
 
                   <div className="w-full grid grid-cols-3 gap-4">
-                    <Card status={dashboardData.lndWalletBalance.data.data} name="Lightning"/>
-                    <Card status={dashboardData.lndOnchainBalance.data.data} name="Lightning onchain"/>
+                    <Card status={dashboardData.lndWalletBalance} name="Lightning"/>
+                    <Card status={dashboardData.lndOnchainBalance} name="Lightning onchain"/>
                     {
                       dashboardData.stacksWalletBalance ?
                         dashboardData.stacksWalletBalance.map(item => {
