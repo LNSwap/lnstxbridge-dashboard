@@ -31,15 +31,17 @@ const Home: NextPage = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [balanceStatus, setBalanceStatus] = useState('');
   const [balanceResult, setBalanceResult] = useState('');
+  const [pairId, setPairId] = useState('BTC/STX');
+  const [amount, setAmount] = useState(0);
 
   const triggerBalance = async () => {
     console.log('triggerBalance');
     const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
-    const headers = {'Authorization' : auth};
+    const headers = {'Authorization' : auth, 'Content-Type': 'application/json',};
     const balanceResult: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer', {
       method: 'POST',
       headers,
-      body: JSON.stringify({pairId: 1, b: 'Textual content'})
+      body: JSON.stringify({pairId, buyAmount: amount})
     }).then(res => res.json());
     setBalanceResult(balanceResult.result);
     setBalanceStatus(balanceResult.status);
@@ -240,7 +242,10 @@ const Home: NextPage = () => {
                             Pair ID (Sell/Buy)
                           </label>
                           <div className="inline-block relative w-64">
-                            <select className="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline" id="pairId">
+                            <select className="block appearance-none w-full bg-white border hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline" id="pairId"   
+                            onChange={e => {
+                                setPairId(e.target.value);
+                            }}>
                               <option>BTC/STX</option>
                               <option>STX/BTC</option>
                               {/* <option>Option 3</option> */}
@@ -252,7 +257,7 @@ const Home: NextPage = () => {
                           <label className="block text-gray-700 text-sm font-bold mt-2" htmlFor="amount">
                             Buy Amount
                           </label>
-                          <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="amount" type="text" placeholder="10"/>
+                          <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="amount" type="number" placeholder="10" onChange={event => {setAmount(Number(event.target.value))}}/>
 
                           <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Status:</b>  {balanceStatus}</p>
                           <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Result:</b>  {balanceResult}</p>
