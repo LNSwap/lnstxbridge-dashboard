@@ -39,7 +39,7 @@ const Home: NextPage = () => {
     const balanceResult: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer', {
       method: 'POST',
       headers,
-      body: JSON.stringify({a: 1, b: 'Textual content'})
+      body: JSON.stringify({pairId: 1, b: 'Textual content'})
     }).then(res => res.json());
     setBalanceResult(balanceResult.result);
     setBalanceStatus(balanceResult.status);
@@ -144,7 +144,7 @@ const Home: NextPage = () => {
                 <a href="" className="text-xl font-bold flex items-center lg:ml-2.5">
                   <img src="/dashboard.png" className="h-6 mr-2"
                        alt="Windster Logo"/>
-                  <span className="self-center whitespace-nowrap">LNSTX Bridge admin</span>
+                  <span className="self-center whitespace-nowrap">LNSTX Bridge Admin Dashboard</span>
                 </a>
               </div>
               <div className="flex items-center">
@@ -220,24 +220,48 @@ const Home: NextPage = () => {
           <div id="main-content" className="h-full w-full bg-gray-50 relative overflow-y-auto lg:ml-64">
             <main>
               <div className="pt-6 px-4">
-                <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-4">
+                <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-1">
                   <div
-                    className="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Balancer</h5>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>min STX:</b> {dashboardData.status.minSTX} STX</p>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>min BTC:</b>  {dashboardData.status.minBTC} sats</p>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Overshoot %:</b>  {dashboardData.status.overshootPct}</p>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Auto Balance:</b>  {dashboardData.status.autoBalance.toString()}</p>
-                    {!dashboardData.status.autoBalance && (
-                      <>
-                      <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Status:</b>  {balanceStatus}</p>
-                      <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Result:</b>  {balanceResult}</p>
-                      <button type="submit" onClick={() => {triggerBalance()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                      Trigger Balance
-                      </button>
-                      </>
-                    )}
+                    className="flex flex-row p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                      <div className="w-full grid columns-2">
+                        {/* <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white text-center">Balancer</h5> */}
+                        <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Auto Balance</h5>
+                        <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>min STX:</b> {dashboardData.status.minSTX} STX</p>
+                        <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>min BTC:</b>  {dashboardData.status.minBTC} sats</p>
+                        <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Overshoot %:</b>  {dashboardData.status.overshootPct}</p>
+                        <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Auto Balance:</b>  {dashboardData.status.autoBalance.toString()}</p>
+                      </div>
+                      <div className="w-full grid columns-2 gap-1">
+                        {!dashboardData.status.autoBalance && (
+                          <>
+                          <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Manual Balance</h5>
 
+                          <label className="block text-gray-700 text-sm font-bold mt-2" htmlFor="pairId">
+                            Pair ID (Sell/Buy)
+                          </label>
+                          <div className="inline-block relative w-64">
+                            <select className="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline" id="pairId">
+                              <option>BTC/STX</option>
+                              <option>STX/BTC</option>
+                              {/* <option>Option 3</option> */}
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            </div>
+                          </div>
+                          <label className="block text-gray-700 text-sm font-bold mt-2" htmlFor="amount">
+                            Buy Amount
+                          </label>
+                          <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="amount" type="text" placeholder="10"/>
+
+                          <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Status:</b>  {balanceStatus}</p>
+                          <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Result:</b>  {balanceResult}</p>
+                          <button type="submit"  data-tooltip-target="tooltip-default"  onClick={() => {triggerBalance()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                          Trigger Balance
+                          </button>
+                          </>
+                        )}
+                      </div>
                   </div>
 
                   <div className="w-full grid grid-cols-3 gap-4">
