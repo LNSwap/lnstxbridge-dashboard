@@ -12,14 +12,14 @@ const Home: NextPage = () => {
   const [dashboardData, setDashboardData] = useState<{
     swaps: SwapProps[],
     reverseSwaps: ReverseSwapProps[]
-    status: string
+    status: {minSTX: number, minBTC: number, overshootPct: number, autoBalance: boolean}
     lndWalletBalance: string
     lndOnchainBalance: string
     stacksWalletBalance: {value: string, walletName: string, address: string}[]
   }>({
     swaps: [],
     reverseSwaps: [],
-    status : '',
+    status: {minSTX: 0, minBTC: 0, overshootPct: 0, autoBalance: false},
     lndWalletBalance : '',
     lndOnchainBalance: '',
     stacksWalletBalance : []
@@ -29,7 +29,22 @@ const Home: NextPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
+  const [balanceStatus, setBalanceStatus] = useState('');
+  const [balanceResult, setBalanceResult] = useState('');
 
+  const triggerBalance = async () => {
+    console.log('triggerBalance');
+    const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+    const headers = {'Authorization' : auth};
+    const balanceResult: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({a: 1, b: 'Textual content'})
+    }).then(res => res.json());
+    setBalanceResult(balanceResult.result);
+    setBalanceStatus(balanceResult.status);
+  }
+  
   useEffect(() => {
     if (loggedIn) {
       getData().then(data => {
@@ -44,8 +59,7 @@ const Home: NextPage = () => {
       const headers = {headers: {'Authorization' : auth}};
       const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps', headers ).then(res => res.json());
       const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
-      const status: string = 'balancer is on demand'
-      // await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer', headers).then(res => res.text());
+      const status: {minSTX: number, minBTC: number, overshootPct: number} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer/status', headers).then(res => res.json());
       const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
       const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
       const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
@@ -187,7 +201,7 @@ const Home: NextPage = () => {
                     </li>
                   </ul>
                   <div className="space-y-2 pt-2">
-                    <a href="https://github.com/grmkris/marduk-admin-backend"
+                    <a href="https://github.com/pseudozach/lnstxbridge-dashboard"
                        className="text-base text-gray-900 font-normal rounded-lg hover:bg-gray-100 group transition duration-75 flex items-center p-2">
                       <svg
                         className="w-6 h-6 text-gray-500 flex-shrink-0 group-hover:text-gray-900 transition duration-75"
@@ -207,15 +221,24 @@ const Home: NextPage = () => {
             <main>
               <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-4">
-                  {/* <div
+                  <div
                     className="block p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Service information</h5>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Balancing status:</b> {JSON.parse(dashboardData.status).balancingStatus}</p>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Balancing mode:</b>  {JSON.parse(dashboardData.status).balancinModeEnum}</p>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Amount:</b>  {JSON.parse(dashboardData.status).amount}</p>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Status:</b>  {JSON.parse(dashboardData.status).status}</p>
-                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Last error:</b>  {JSON.parse(dashboardData.status).lastError}</p>
-                  </div> */}
+                    <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Balancer</h5>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>min STX:</b> {dashboardData.status.minSTX} STX</p>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>min BTC:</b>  {dashboardData.status.minBTC} sats</p>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Overshoot %:</b>  {dashboardData.status.overshootPct}</p>
+                    <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Auto Balance:</b>  {dashboardData.status.autoBalance.toString()}</p>
+                    {!dashboardData.status.autoBalance && (
+                      <>
+                      <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Status:</b>  {balanceStatus}</p>
+                      <p className="font-normal text-gray-700 dark:text-gray-400 break-words"><b>Result:</b>  {balanceResult}</p>
+                      <button type="submit" onClick={() => {triggerBalance()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                      Trigger Balance
+                      </button>
+                      </>
+                    )}
+
+                  </div>
 
                   <div className="w-full grid grid-cols-3 gap-4">
                     <Card status={dashboardData.lndWalletBalance} name="Lightning"/>
@@ -223,7 +246,7 @@ const Home: NextPage = () => {
                     {
                       dashboardData.stacksWalletBalance ?
                         dashboardData.stacksWalletBalance.map(item => {
-                          return <Card key={item.walletName} status={item.value} name={item.walletName} address={item.address}/>
+                          return <Card key={item.walletName} status={Number(item.value)/10**6} name={item.walletName} address={item.address}/>
                         })
                       : null
                     }
