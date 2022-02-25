@@ -33,8 +33,20 @@ export interface ReverseSwapProps {
 const ReverseSwaps = (props: any) => {
 
   useEffect(() => {
-    console.log(props.reverseSwaps);
+    // console.log(props.reverseSwaps);
   }, [])
+
+  const reverseSort = (rowA: ReverseSwapProps, rowB: ReverseSwapProps) => {
+    const a = rowA.updatedAt;
+    const b = rowB.updatedAt;
+    if (b > a) {
+        return 1;
+    }
+    if (a > b) {
+        return -1;
+    }
+    return 0;
+  };
 
   const columns = [
     {
@@ -103,6 +115,7 @@ const ReverseSwaps = (props: any) => {
       selector: (row: ReverseSwapProps) => row.updatedAt.toString(),
       minWidth: '200px',
       sortable: true,
+      sortFunction: reverseSort,
     },
     {
       name: 'Created at',

@@ -29,9 +29,20 @@ export interface SwapProps {
 const Swaps = (props : { swaps: SwapProps[] }) => {
 
   useEffect(() => {
-    console.log(props.swaps);
+    // console.log(props.swaps);
   }, [])
 
+  const reverseSort = (rowA: SwapProps, rowB: SwapProps) => {
+    const a = rowA.updatedAt;
+    const b = rowB.updatedAt;
+    if (b > a) {
+        return 1;
+    }
+    if (a > b) {
+        return -1;
+    }
+    return 0;
+  };
 
   const columns = [
     {
@@ -100,6 +111,7 @@ const Swaps = (props : { swaps: SwapProps[] }) => {
       selector: (row: SwapProps) => row.updatedAt.toString(),
       minWidth: '200px',
       sortable: true,
+      sortFunction: reverseSort,
     },
     {
       name: 'Created at',
