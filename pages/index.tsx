@@ -61,7 +61,7 @@ const Home: NextPage = () => {
       const headers = {headers: {'Authorization' : auth}};
       const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps', headers ).then(res => res.json());
       const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
-      const status: {minSTX: number, minBTC: number, overshootPct: number} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer/status', headers).then(res => res.json());
+      const status: {minSTX: number, minBTC: number, overshootPct: number, autoBalance: boolean} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer/status', headers).then(res => res.json());
       const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
       const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
       const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
