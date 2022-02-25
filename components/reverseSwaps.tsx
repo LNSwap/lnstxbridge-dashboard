@@ -134,7 +134,7 @@ const ReverseSwaps = (props: any) => {
         <h3 className="text-base font-normal text-gray-500">Recent reverse swaps</h3>
       </div>
     </div>
-    <DataTable dense pagination columns={columns} data={props.reverseSwaps} highlightOnHover conditionalRowStyles={conditionalRowStyles}/>
+    <DataTable dense pagination columns={columns} data={props.reverseSwaps} highlightOnHover conditionalRowStyles={conditionalRowStyles} defaultSortFieldId={11}/>
   </div>
   );
 
