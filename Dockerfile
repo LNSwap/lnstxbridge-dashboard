@@ -1,7 +1,7 @@
 FROM debian:buster-slim
 
 RUN apt-get update
-RUN apt-get -y install curl gnupg git rsync build-essential python
+# RUN apt-get -y install curl gnupg git rsync build-essential python
 RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
 RUN apt-get -y install nodejs
 
@@ -13,7 +13,7 @@ WORKDIR /usr/src/app
 # COPY package-docker.json ./package.json
 COPY . ./
 RUN npm install
-RUN npm run compile
+RUN npm run build
 
-EXPOSE 9003
+EXPOSE 3000
 CMD [ "npm", "run", "start" ]
