@@ -5,7 +5,6 @@ import ReverseSwaps, {ReverseSwapProps} from "../components/reverseSwaps";
 import Card from "../components/card";
 import React, {useEffect, useState} from "react";
 import Image from "next/image";
-import loading from "../public/loading.jpeg";
 
 const Home: NextPage = () => {
 
@@ -90,7 +89,6 @@ const Home: NextPage = () => {
     return (
       <div className="m-auto mt-40 max-w-2xl">
           <div className="mb-6">
-            <img src="./dashboard.png"  style={{display: 'block', margin: 'auto',}}/>
             <h1 style={{textAlign: 'center', fontSize: 'x-large',}}>LN-STX Bridge Admin Dashboard</h1>
           </div>
           <div className="mb-6">
@@ -125,7 +123,7 @@ const Home: NextPage = () => {
           <div className="text-xl font-bold text-gray-900 dark:text-gray-300">
             Loading...
           </div>
-          <Image src={loading} alt="loading" className="w-64 h-64"/>
+          <Image src="/loading.jpeg" alt="loading" className="w-64 h-64" width={128} height={128}/>
         </div>
       </div>
     )
@@ -159,9 +157,10 @@ const Home: NextPage = () => {
                   </svg>
                 </button>
                 <a href="" className="text-xl font-bold flex items-center lg:ml-2.5">
-                  <img src="/dashboard.png" className="h-6 mr-2"
+                  <Image src="/dashboard.png" className="h-6 mr-2"
+                    width={32} height={32}
                        alt="Windster Logo"/>
-                  <span className="self-center whitespace-nowrap">LNSTX Bridge Admin Dashboard</span>
+                  <span className="self-center whitespace-nowrap ml-2">LNSTX Bridge Admin Dashboard</span>
                 </a>
               </div>
               <div className="flex items-center">
