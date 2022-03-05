@@ -15,6 +15,8 @@ const Home: NextPage = () => {
     status: {minSTX: number, minBTC: number, overshootPct: number, autoBalance: boolean}
     lndWalletBalance: string
     lndOnchainBalance: string
+    exchangeBTCBalance: string
+    exchangeSTXBalance: string
     stacksWalletBalance: {value: string, walletName: string, address: string}[]
   }>({
     swaps: [],
@@ -22,6 +24,8 @@ const Home: NextPage = () => {
     status: {minSTX: 0, minBTC: 0, overshootPct: 0, autoBalance: false},
     lndWalletBalance : '',
     lndOnchainBalance: '',
+    exchangeBTCBalance: '',
+    exchangeSTXBalance: '',
     stacksWalletBalance : []
   });
 
@@ -65,14 +69,20 @@ const Home: NextPage = () => {
       const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
       const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
       const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
-
+      let post = {headers: {'Authorization' : auth}, method: 'POST', body: JSON.stringify({currency: 'BTC'})};
+      const exchangeAllBalances = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer/balances', post).then(res => res.json());
+      console.log('exchangeAllBalances ', exchangeAllBalances);
+      const exchangeBTCBalance = (exchangeAllBalances.find((item: { currency: string; }) => item.currency === 'BTC')).available;
+      const exchangeSTXBalance = (exchangeAllBalances.find((item: { currency: string; }) => item.currency === 'STX')).available;
       return {
           swaps: swaps,
           reverseSwaps: reverseSwaps,
           status: status,
           lndWalletBalance: lndWalletBalance,
           stacksWalletBalance: stacksWalletBalances,
-          lndOnchainBalance: lndOnchainBalance
+          lndOnchainBalance: lndOnchainBalance,
+          exchangeBTCBalance: exchangeBTCBalance,
+          exchangeSTXBalance: exchangeSTXBalance,
       }
   };
 
@@ -284,6 +294,8 @@ const Home: NextPage = () => {
                         })
                       : null
                     }
+                    <Card status={dashboardData.exchangeBTCBalance} name="Exchange BTC"/>
+                    <Card status={dashboardData.exchangeSTXBalance} name="Exchange STX"/>
                   {/*  <Card status={dashboardData.stacksWalletBalance} name="Stacks Balance"/> */}
                   </div>
                 </div>
