@@ -56,6 +56,13 @@ const Home: NextPage = () => {
         setDashboardData(data);
         setIsLoading(false);
       });
+    } else {
+      // check if localstorage has username/password
+      if(localStorage.getItem('username') && localStorage.getItem('password')) {
+        setUsername(localStorage.getItem('username')!);
+        setPassword(localStorage.getItem('password')!);
+        setLoggedIn(true);
+      }
     }
   }, [username, password, loggedIn])
 
@@ -103,6 +110,7 @@ const Home: NextPage = () => {
                    placeholder="username" required
             onChange={event => {
               setUsername(event.target.value);
+              localStorage.setItem('username', event.target.value);
             }}/>
           </div>
           <div className="mb-6">
@@ -111,7 +119,7 @@ const Home: NextPage = () => {
             <input type="password" id="password"
                     placeholder="password"
                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   required onChange={event => {setPassword(event.target.value)}}/>
+                   required onChange={event => {setPassword(event.target.value); localStorage.setItem('password', event.target.value);}}/>
           </div>
           <button type="submit" onClick={() => {setLoggedIn(true)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
             Login
