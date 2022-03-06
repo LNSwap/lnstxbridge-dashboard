@@ -5,8 +5,30 @@ import ReverseSwaps, {ReverseSwapProps} from "../components/reverseSwaps";
 import Card from "../components/card";
 import React, {useEffect, useState} from "react";
 import Image from "next/image";
+import Form from "@rjsf/core";
 
 const Config: NextPage = () => {
+
+    const schema = {
+        title: "Bridge Configuration",
+        "description": "View/Edit configuration",
+        "type": "object",
+        "properties": {
+          "prepayMinerFee": {
+            "type": "boolean"
+          },
+          "aggregatorUrl": {
+            "type": "string"
+          },
+          "providerUrl": {
+            "type": "string"
+          }
+        }
+    };
+
+    const uiSchema = {
+        classNames: "m-2"
+    };
 
     const [configData, setConfigData] = useState<{}>();
 
@@ -178,6 +200,7 @@ const Config: NextPage = () => {
             <main>
                 <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-1">
+                    <Form schema={schema} formData={configData} uiSchema={uiSchema}/>
                     {/* <div
                     className="flex flex-row p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                         <div className="w-full grid columns-2">
