@@ -267,7 +267,7 @@ const Config: NextPage = () => {
         const result: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/restartapp', {
           method: 'POST',
           headers,
-          body: "restart"
+          body: JSON.stringify({restart: "now"})
         }).then(res => res.json());
         console.log("restartApp: ", result);
       }
@@ -411,7 +411,7 @@ const Config: NextPage = () => {
                 <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-1">
                     <Form schema={schema} formData={configData} uiSchema={uiSchema} onSubmit={onSubmit}/>
-                    <Button variant="contained" onClick={() => {restartApp()}} >Restart</Button>
+                    <Button variant="contained" onClick={() => {restartApp()}} color="error" sx={{display: 'block', margin: 'auto', marginBottom: 8, width: '30%',}}>Restart App</Button>
                     {/* <div
                     className="flex flex-row p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                         <div className="w-full grid columns-2">
