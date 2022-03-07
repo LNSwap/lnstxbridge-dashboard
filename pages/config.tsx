@@ -6,6 +6,7 @@ import Card from "../components/card";
 import React, {useEffect, useState} from "react";
 import Image from "next/image";
 import Form from "@rjsf/material-ui";
+import Button from '@mui/material/Button';
 
 const Config: NextPage = () => {
 
@@ -249,6 +250,28 @@ const Config: NextPage = () => {
           return configData;
       };
 
+      const onSubmit = async ({formData}) => {
+          const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+          const headers = {'Authorization' : auth, 'Content-Type': 'application/json',};
+          const configResult: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/saveconfiguration', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({config: formData})
+          }).then(res => res.json());
+          console.log("configResult: ", configResult);
+      }
+
+      const restartApp = async () => {
+        const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+        const headers = {'Authorization' : auth, 'Content-Type': 'application/json',};
+        const result: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/restartapp', {
+          method: 'POST',
+          headers,
+          body: "restart"
+        }).then(res => res.json());
+        console.log("restartApp: ", result);
+      }
+      
     if (loggedIn == false) {
         return (
           <div className="m-auto mt-40 max-w-2xl">
@@ -387,7 +410,8 @@ const Config: NextPage = () => {
             <main>
                 <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-1">
-                    <Form schema={schema} formData={configData} uiSchema={uiSchema}/>
+                    <Form schema={schema} formData={configData} uiSchema={uiSchema} onSubmit={onSubmit}/>
+                    <Button variant="contained" onClick={() => {restartApp()}} >Restart</Button>
                     {/* <div
                     className="flex flex-row p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                         <div className="w-full grid columns-2">
