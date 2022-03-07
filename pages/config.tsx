@@ -5,29 +5,218 @@ import ReverseSwaps, {ReverseSwapProps} from "../components/reverseSwaps";
 import Card from "../components/card";
 import React, {useEffect, useState} from "react";
 import Image from "next/image";
-import Form from "@rjsf/core";
+import Form from "@rjsf/material-ui";
 
 const Config: NextPage = () => {
 
     const schema = {
-        title: "Bridge Configuration",
-        "description": "View/Edit configuration",
+        "title": "Bridge Configuration",
+        // "description": "View/Edit configuration",
         "type": "object",
-        "properties": {
-          "prepayMinerFee": {
-            "type": "boolean"
+         "properties": {
+              "prepayMinerFee": {
+              "type": "boolean"
           },
-          "aggregatorUrl": {
-            "type": "string"
+              "aggregatorUrl": {
+              "type": "string"
           },
-          "providerUrl": {
-            "type": "string"
-          }
-        }
+              "providerUrl": {
+              "type": "string"
+          },
+           "notification": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                    },
+                "channel": {
+                    "type": "string"
+                    },
+                "prefix": {
+                    "type": "string"
+                    },
+                "interval": {
+                    "type": "number"
+                    },
+                "otpsecretpath": {
+                    "type": "string"
+                }
+            }
+          },
+            "balancer": {
+                "type": "object",
+                "properties": {
+                    "apiUri": {
+                        "type": "string"
+                    },
+                    "apiKey": {
+                        "type": "string"
+                    },
+                    "secretKey": {
+                        "type": "string"
+                    },
+                    "passphrase": {
+                        "type": "string"
+                    },
+                    "tradePassword": {
+                        "type": "string"
+                    },
+                    "minSTX": {
+                        "type": "number"
+                    },
+                    "minBTC": {
+                        "type": "number"
+                    },
+                    "overshootPercentage": {
+                        "type": "number"
+                    },
+                    "autoBalance": {
+                        "type": "boolean"
+                    }
+                }
+            },         
+            "dashboard": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "pairs": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "base": {
+                            "type": "string"
+                        },
+                        "quote": {
+                            "type": "string"
+                        },
+                        "fee": {
+                            "type": "number"
+                        },
+                        "timeoutDelta": {
+                            "type": "number"
+                        }
+                    }
+                }
+            },
+            "currencies": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "symbol": {
+                            "type": "string"
+                        },
+                        "network": {
+                            "type": "string"
+                        },
+                        "minWalletBalance": {
+                            "type": "number"
+                        },
+                        "minChannelBalance": {
+                            "type": "number"
+                        },
+                        "maxSwapAmount": {
+                            "type": "number"
+                        },
+                        "minSwapAmount": {
+                            "type": "number"
+                        },
+                        "maxZeroConfAmount": {
+                            "type": "number"
+                        },
+                        "chain": {
+                            "type": "object",
+                            "properties": {
+                                "host": {
+                                    "type": "string"
+                                },
+                                "port": {
+                                    "type": "number"
+                                },
+                                "cookie": {
+                                    "type": "string"
+                                },
+                                "rpcuser": {
+                                    "type": "string"
+                                },
+                                "rpcpass": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "lnd": {
+                            "type": "object",
+                            "properties": {
+                                "host": {
+                                    "type": "string"
+                                },
+                                "port": {
+                                    "type": "number"
+                                },
+                                "certpath": {
+                                    "type": "string"
+                                },
+                                "macaroonpath": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "stacks": {
+                "type": "object",
+                "properties": {
+                    "providerEndpoint": {
+                        "type": "string"
+                    },
+                    "stxSwapAddress": {
+                        "type": "string"
+                    },
+                    "sip10SwapAddress": {
+                        "type": "string"
+                    },
+                    "tokens": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "symbol": {
+                                    "type": "string"
+                                },
+                                "maxSwapAmount": {
+                                    "type": "number"
+                                },
+                                "minSwapAmount": {
+                                    "type": "number"
+                                },
+                                "contractAddress": {
+                                    "type": "string"
+                                },
+                                "decimals": {
+                                    "type": "number"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "configpath": {
+                "type": "string"
+            }
+         }
     };
 
     const uiSchema = {
-        classNames: "m-2"
+        classNames: "m-4"
     };
 
     const [configData, setConfigData] = useState<{}>();
@@ -56,10 +245,8 @@ const Config: NextPage = () => {
       const getData = async () => {
           const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
           const headers = {headers: {'Authorization' : auth}};
-          const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/getconfiguration', headers ).then(res => res.json());
-          return {
-              swaps: swaps,
-          }
+          const configData: any = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/getconfiguration', headers ).then(res => res.json());
+          return configData;
       };
 
     if (loggedIn == false) {
