@@ -7,10 +7,11 @@ import React, {useEffect, useState} from "react";
 import Image from "next/image";
 import Form from "@rjsf/material-ui";
 import Button from '@mui/material/Button';
+import { JSONSchema7 } from "json-schema";
 
 const Config: NextPage = () => {
 
-    const schema = {
+    const schema:JSONSchema7 = {
         "title": "Bridge Configuration",
         // "description": "View/Edit configuration",
         "type": "object",
