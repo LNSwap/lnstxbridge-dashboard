@@ -274,6 +274,12 @@ const Config: NextPage = () => {
         console.log("restartApp: ", result);
       }
       
+      const toggleSidebarMobile = () => {
+        document.getElementById('sidebar')!.classList.toggle('hidden');
+        document.getElementById('toggleSidebarMobileHamburger')!.classList.toggle('hidden');
+        document.getElementById('toggleSidebarMobileClose')!.classList.toggle('hidden');
+      }
+
     if (loggedIn == false) {
         return (
           <div className="m-auto mt-40 max-w-2xl">
@@ -318,7 +324,7 @@ const Config: NextPage = () => {
             <div className="px-3 py-3 lg:px-5 lg:pl-3">
             <div className="flex items-center justify-between">
                 <div className="flex items-center justify-start">
-                <button id="toggleSidebarMobile" aria-expanded="true" aria-controls="sidebar"
+                <button id="toggleSidebarMobile" aria-expanded="true" aria-controls="sidebar" onClick={() => {toggleSidebarMobile()}}
                         className="lg:hidden mr-2 text-gray-600 hover:text-gray-900 cursor-pointer p-2 hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-gray-100 rounded">
                     <svg id="toggleSidebarMobileHamburger" className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
                         xmlns="http://www.w3.org/2000/svg">
@@ -352,7 +358,7 @@ const Config: NextPage = () => {
                 <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                 <div className="flex-1 px-3 bg-white divide-y space-y-1">
                     <ul className="space-y-2 pb-2">
-                    <li>
+                    {/* <li>
                         <form action="#" method="GET" className="lg:hidden">
                         <label htmlFor="mobile-search" className="sr-only">Search</label>
                         <div className="relative">
@@ -368,7 +374,7 @@ const Config: NextPage = () => {
                                 placeholder="Search"/>
                         </div>
                         </form>
-                    </li>
+                    </li> */}
                     <li>
                         <Link href="/">
                             <a className="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 group">

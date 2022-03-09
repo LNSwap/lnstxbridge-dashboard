@@ -56,7 +56,7 @@ const Home: NextPage = () => {
         setDashboardData(data);
         setIsLoading(false);
       }).catch(error => {
-        console.log('getData error ', error);
+        // console.log('getData error ', error);
         alert('Failed to get data from backend');
         localStorage.clear();
         window.location.href = "/";
@@ -66,6 +66,7 @@ const Home: NextPage = () => {
       if(localStorage.getItem('username') && localStorage.getItem('password')) {
         setUsername(localStorage.getItem('username')!);
         setPassword(localStorage.getItem('password')!);
+        setLoggedIn(true);
       }
     }
   }, [username, password, loggedIn])
@@ -81,7 +82,7 @@ const Home: NextPage = () => {
       const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
       let post = {headers: {'Authorization' : auth}, method: 'POST', body: JSON.stringify({currency: 'BTC'})};
       const exchangeAllBalances = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer/balances', post).then(res => res.json());
-      console.log('exchangeAllBalances ', exchangeAllBalances);
+      // console.log('exchangeAllBalances ', exchangeAllBalances);
       let exchangeBTCBalance = '0';
       let exchangeSTXBalance = '0';
       if(exchangeAllBalances !== 'Unable to get exchange balances') {
@@ -105,6 +106,18 @@ const Home: NextPage = () => {
     window.location.href = "/";
   }
 
+  const toggleSidebarMobile = () => {
+    document.getElementById('sidebar')!.classList.toggle('hidden');
+    document.getElementById('toggleSidebarMobileHamburger')!.classList.toggle('hidden');
+    document.getElementById('toggleSidebarMobileClose')!.classList.toggle('hidden');
+  }
+
+  const login = () => {
+    localStorage.setItem('username', username);
+    localStorage.setItem('password', password);
+    setLoggedIn(true);
+  }
+
   if (loggedIn == false) {
     return (
       <div className="m-auto mt-40 max-w-2xl">
@@ -119,7 +132,6 @@ const Home: NextPage = () => {
                    placeholder="username" required
             onChange={event => {
               setUsername(event.target.value);
-              localStorage.setItem('username', event.target.value);
             }}/>
           </div>
           <div className="mb-6">
@@ -128,9 +140,9 @@ const Home: NextPage = () => {
             <input type="password" id="password"
                     placeholder="password"
                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   required onChange={event => {setPassword(event.target.value); localStorage.setItem('password', event.target.value);}}/>
+                   required onChange={event => {setPassword(event.target.value);}}/>
           </div>
-          <button type="submit" onClick={() => {setLoggedIn(true)}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          <button type="submit" onClick={() => {login()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
             Login
           </button>
       </div>
@@ -162,7 +174,7 @@ const Home: NextPage = () => {
           <div className="px-3 py-3 lg:px-5 lg:pl-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center justify-start">
-                <button id="toggleSidebarMobile" aria-expanded="true" aria-controls="sidebar"
+                <button id="toggleSidebarMobile" aria-expanded="true" aria-controls="sidebar" onClick={() => {toggleSidebarMobile()}}
                         className="lg:hidden mr-2 text-gray-600 hover:text-gray-900 cursor-pointer p-2 hover:bg-gray-100 focus:bg-gray-100 focus:ring-2 focus:ring-gray-100 rounded">
                   <svg id="toggleSidebarMobileHamburger" className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
                        xmlns="http://www.w3.org/2000/svg">
@@ -201,7 +213,7 @@ const Home: NextPage = () => {
               <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                 <div className="flex-1 px-3 bg-white divide-y space-y-1">
                   <ul className="space-y-2 pb-2">
-                    <li>
+                    {/* <li>
                       <form action="#" method="GET" className="lg:hidden">
                         <label htmlFor="mobile-search" className="sr-only">Search</label>
                         <div className="relative">
@@ -217,7 +229,7 @@ const Home: NextPage = () => {
                                  placeholder="Search"/>
                         </div>
                       </form>
-                    </li>
+                    </li> */}
                     <li>
                       <a href="#"
                          className="text-base text-gray-900 font-normal rounded-lg flex items-center p-2 hover:bg-gray-100 group">
