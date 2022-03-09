@@ -250,7 +250,7 @@ const Config: NextPage = () => {
           return configData;
       };
 
-      const onSubmit = async ({formData}) => {
+      const onSubmit = async ({formData}:{formData:any}) => {
           const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
           const headers = {'Authorization' : auth, 'Content-Type': 'application/json',};
           const configResult: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/saveconfiguration', {
