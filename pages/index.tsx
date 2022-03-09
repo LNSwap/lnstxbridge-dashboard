@@ -51,6 +51,7 @@ const Home: NextPage = () => {
   }
   
   useEffect(() => {
+    console.log('backend IP: ', process.env.NEXT_PUBLIC_BACKEND_URL);
     if (loggedIn) {
       getData().then(data => {
         setDashboardData(data);
