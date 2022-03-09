@@ -59,13 +59,13 @@ const Home: NextPage = () => {
         console.log('getData error ', error);
         alert('Failed to get data from backend');
         localStorage.clear();
+        window.location.href = "/";
       });
     } else {
       // check if localstorage has username/password
       if(localStorage.getItem('username') && localStorage.getItem('password')) {
         setUsername(localStorage.getItem('username')!);
         setPassword(localStorage.getItem('password')!);
-        setLoggedIn(true);
       }
     }
   }, [username, password, loggedIn])
