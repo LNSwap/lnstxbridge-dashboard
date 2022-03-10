@@ -57,7 +57,6 @@ const Home: NextPage = () => {
         setDashboardData(data);
         setIsLoading(false);
       }).catch(error => {
-        // console.log('getData error ', error);
         alert('Failed to get data from backend');
         localStorage.clear();
         window.location.href = "/";
