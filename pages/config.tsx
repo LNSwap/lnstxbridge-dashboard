@@ -228,8 +228,12 @@ const Config: NextPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loggedIn, setLoggedIn] = useState(false);
+    const [apiurl, setApiurl] = useState(process.env.NEXT_PUBLIC_BACKEND_URL);
 
     useEffect(() => {
+        const baseurl = window.location.href.split(':')[1].split('/')[2];
+        setApiurl(process.env.NEXT_PUBLIC_BACKEND_URL || `http://${baseurl}:9008`);
+        console.log('backend IP: ', baseurl, process.env.NEXT_PUBLIC_BACKEND_URL || `http://${baseurl}:9008`, apiurl);
         if (loggedIn) {
           getData().then(data => {
             setConfigData(data);
@@ -248,14 +252,14 @@ const Config: NextPage = () => {
       const getData = async () => {
           const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
           const headers = {headers: {'Authorization' : auth}};
-          const configData: any = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/getconfiguration', headers ).then(res => res.json());
+          const configData: any = await fetch(apiurl + '/api/admin/getconfiguration', headers ).then(res => res.json());
           return configData;
       };
 
       const onSubmit = async ({formData}:{formData:any}) => {
           const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
           const headers = {'Authorization' : auth, 'Content-Type': 'application/json',};
-          const configResult: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/saveconfiguration', {
+          const configResult: {status:string, result: string} = await fetch(apiurl + '/api/admin/saveconfiguration', {
             method: 'POST',
             headers,
             body: JSON.stringify({config: formData})
@@ -266,7 +270,7 @@ const Config: NextPage = () => {
       const restartApp = async () => {
         const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
         const headers = {'Authorization' : auth, 'Content-Type': 'application/json',};
-        const result: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/restartapp', {
+        const result: {status:string, result: string} = await fetch(apiurl + '/api/admin/restartapp', {
           method: 'POST',
           headers,
           body: JSON.stringify({restart: "now"})

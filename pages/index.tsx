@@ -36,12 +36,12 @@ const Home: NextPage = () => {
   const [balanceResult, setBalanceResult] = useState('');
   const [pairId, setPairId] = useState('BTC/STX');
   const [amount, setAmount] = useState(0);
+  const [apiurl, setApiurl] = useState(process.env.NEXT_PUBLIC_BACKEND_URL);
 
   const triggerBalance = async () => {
-    console.log('triggerBalance');
     const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
     const headers = {'Authorization' : auth, 'Content-Type': 'application/json',};
-    const balanceResult: {status:string, result: string} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer', {
+    const balanceResult: {status:string, result: string} = await fetch(apiurl + '/api/admin/balancer', {
       method: 'POST',
       headers,
       body: JSON.stringify({pairId, buyAmount: amount})
@@ -51,7 +51,9 @@ const Home: NextPage = () => {
   }
   
   useEffect(() => {
-    console.log('backend IP: ', process.env.NEXT_PUBLIC_BACKEND_URL);
+    const baseurl = window.location.href.split(':')[1].split('/')[2];
+    setApiurl(process.env.NEXT_PUBLIC_BACKEND_URL || `http://${baseurl}:9008`);
+    console.log('backend IP: ', baseurl, process.env.NEXT_PUBLIC_BACKEND_URL || `http://${baseurl}:9008`, apiurl);
     if (loggedIn) {
       getData().then(data => {
         setDashboardData(data);
@@ -74,14 +76,14 @@ const Home: NextPage = () => {
   const getData = async () => {
       const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
       const headers = {headers: {'Authorization' : auth}};
-      const swaps: SwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps', headers ).then(res => res.json());
-      const reverseSwaps: ReverseSwapProps[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/swaps/reverse', headers).then(res => res.json());
-      const status: {minSTX: number, minBTC: number, overshootPct: number, autoBalance: boolean} = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer/status', headers).then(res => res.json());
-      const lndWalletBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
-      const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/stacks/balance', headers).then(res => res.json());
-      const lndOnchainBalance: string = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
+      const swaps: SwapProps[] = await fetch(apiurl + '/api/admin/swaps', headers ).then(res => res.json());
+      const reverseSwaps: ReverseSwapProps[] = await fetch(apiurl + '/api/admin/swaps/reverse', headers).then(res => res.json());
+      const status: {minSTX: number, minBTC: number, overshootPct: number, autoBalance: boolean} = await fetch(apiurl + '/api/admin/balancer/status', headers).then(res => res.json());
+      const lndWalletBalance: string = await fetch(apiurl + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
+      const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(apiurl + '/api/admin/stacks/balance', headers).then(res => res.json());
+      const lndOnchainBalance: string = await fetch(apiurl + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
       let post = {headers: {'Authorization' : auth}, method: 'POST', body: JSON.stringify({currency: 'BTC'})};
-      const exchangeAllBalances = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + '/api/admin/balancer/balances', post).then(res => res.json());
+      const exchangeAllBalances = await fetch(apiurl + '/api/admin/balancer/balances', post).then(res => res.json());
       // console.log('exchangeAllBalances ', exchangeAllBalances);
       let exchangeBTCBalance = '0';
       let exchangeSTXBalance = '0';
