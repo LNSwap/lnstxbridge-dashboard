@@ -1,6 +1,6 @@
 # LN - STX Bridge Admin Dashboard
 
-* This frontend app displays data from an [lnstxbridge](https://github.com/pseudozach/lnstxbridge) instance.
+* This frontend app displays data from an [lnstxbridge](https://github.com/pseudozach/lnstxbridge) or [lnstxbridge-client](https://github.com/pseudozach/lnstxbridge-client) instance.
 * Allows manual rebalancing of bridge funds via [OKCoin API](https://www.okcoin.com/docs/en/#README).
 
 ## Deploy on Vercel
