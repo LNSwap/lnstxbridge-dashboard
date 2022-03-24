@@ -10,6 +10,12 @@ import Button from '@mui/material/Button';
 import { JSONSchema7 } from "json-schema";
 import Link from 'next/link'
 
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+
 const Config: NextPage = () => {
 
     const schema:JSONSchema7 = {
@@ -230,6 +236,16 @@ const Config: NextPage = () => {
     const [loggedIn, setLoggedIn] = useState(false);
     const [apiurl, setApiurl] = useState(process.env.NEXT_PUBLIC_BACKEND_URL);
 
+    // popup
+    const [open, setOpen] = useState(false);
+    const [seed, setSeed] = useState('');
+    const handleClickOpen = () => {
+      setOpen(true);
+    };
+    const handleClose = () => {
+      setOpen(false);
+    };
+
     useEffect(() => {
         const baseurl = window.location.href.split(':')[1].split('/')[2];
         setApiurl(process.env.NEXT_PUBLIC_BACKEND_URL || `http://${baseurl}:9008`);
@@ -276,6 +292,19 @@ const Config: NextPage = () => {
           body: JSON.stringify({restart: "now"})
         }).then(res => res.json());
         console.log("restartApp: ", result);
+      }
+
+      const showSeed = async () => {
+        const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+        const headers = {'Authorization' : auth, 'Content-Type': 'application/json',};
+        const result: string = await fetch(apiurl + '/api/admin/getmnemonic', {
+          method: 'GET',
+          headers,
+        //   body: JSON.stringify({restart: "now"})
+        }).then(res => res.json());
+        // console.log("showSeed: ", result);
+        setSeed(result);
+        handleClickOpen();
       }
       
       const toggleSidebarMobile = () => {
@@ -422,9 +451,34 @@ const Config: NextPage = () => {
             <div id="main-content" className="h-full w-full bg-gray-50 relative overflow-y-auto lg:ml-64">
             <main>
                 <div className="pt-6 px-4">
-                <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-1">
+                <div className="w-full grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-1" style={{display: 'flex', flexDirection: 'column',}}>
                     <Form schema={schema} formData={configData} uiSchema={uiSchema} onSubmit={onSubmit}/>
-                    <Button variant="contained" onClick={() => {restartApp()}} color="error" sx={{display: 'block', margin: 'auto', marginBottom: 8, width: '30%',}}>Restart App</Button>
+                    <div style={{marginTop: '16px',}}>
+                        <Button variant="contained" onClick={() => {restartApp()}} color="error" sx={{display: 'block', margin: 'auto', marginBottom: 2, width: '30%',}}>Restart App</Button>
+                        <Button variant="contained" onClick={() => {showSeed()}} color="error" sx={{display: 'block', margin: 'auto', marginBottom: 2, width: '30%',}}>Show Wallet Seed</Button>
+                    </div>
+                    <Dialog
+                        open={open}
+                        onClose={handleClose}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <DialogTitle id="alert-dialog-title">
+                        {"Bridge Client Wallet Private Key"}
+                        </DialogTitle>
+                        <DialogContent>
+                        <DialogContentText id="alert-dialog-description">
+                            This is the mnemonic seed for the Stacks signer account. <br/>Keep this safe, do NOT share with anyone.<br/>
+                            <b>{seed}</b>
+                        </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                        {/* <Button onClick={handleClose}>Disagree</Button> */}
+                        <Button onClick={handleClose} autoFocus>
+                            OK
+                        </Button>
+                        </DialogActions>
+                    </Dialog>
                     {/* <div
                     className="flex flex-row p-6 bg-white rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                         <div className="w-full grid columns-2">
