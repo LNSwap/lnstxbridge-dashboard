@@ -7,8 +7,14 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpseudozach%2Flnstxbridge-dashboard&env=NEXT_PUBLIC_BACKEND_URL&envDescription=URL%20of%20LN-STX%20Bridge%20Backend)  
 
-* Host your own admin dashboard for your lnstxbridge instance. You will need your backend URL and username/password.  
-
+* Host your own admin dashboard for your lnstxbridge instance.
+* You will need your backend URL and username/password from your provider client config.  
+```
+providerUrl="http://<server IP>:9008" -> set as NEXT_PUBLIC_BACKEND_URL
+[dashboard]  
+username = "admin" -> Use these to login
+password = "xxx" -> Use these to login
+```  
 
 ### Development - Getting Started
 
