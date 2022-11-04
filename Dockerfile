@@ -1,15 +1,43 @@
-FROM debian:buster-slim
+FROM    --platform=${TARGETPLATFORM} node:16-alpine AS deps
 
-RUN apt-get update
-RUN apt-get -y install curl gnupg git
-RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
-RUN apt-get -y install nodejs
+RUN     apk add --no-cache libc6-compat
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY . ./
-RUN npm install
-RUN npm run build
+COPY    package.json package-lock.json ./
 
-EXPOSE 3000
-CMD [ "npm", "run", "start" ]
+RUN     npm ci --force
+
+FROM    --platform=${TARGETPLATFORM} node:16-alpine AS builder
+
+WORKDIR /app
+
+COPY    --from=deps /app/node_modules ./node_modules
+
+COPY    . .
+
+RUN     npm run build
+
+
+FROM    --platform=${TARGETPLATFORM} node:16-alpine AS runner
+
+WORKDIR /app
+
+ENV     NODE_ENV production
+
+RUN     apk add gnupg && \
+        addgroup --system --gid 1001 nodejs && \
+        adduser --system --uid 1001 nextjs
+
+COPY    --from=builder /app/public ./public
+COPY    --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY    --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER    nextjs
+
+ENV     NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:9008} \
+        PORT=9010
+
+EXPOSE  $PORT
+
+CMD     ["node", "server.js"]
