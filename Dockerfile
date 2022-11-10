@@ -37,7 +37,7 @@ COPY    --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER    nextjs
 
 ENV     NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:9008} \
-        PORT=9010
+        PORT=3000
 
 EXPOSE  $PORT
 
