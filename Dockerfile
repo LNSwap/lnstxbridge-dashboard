@@ -6,8 +6,9 @@ WORKDIR /app
 
 COPY    package.json package-lock.json ./
 
-RUN     npm ci --force
+RUN     npm ci
 
+#####################################################################################################
 FROM    --platform=${TARGETPLATFORM} node:16-alpine AS builder
 
 WORKDIR /app
@@ -18,7 +19,7 @@ COPY    . .
 
 RUN     npm run build
 
-
+#####################################################################################################
 FROM    --platform=${TARGETPLATFORM} node:16-alpine AS runner
 
 WORKDIR /app
