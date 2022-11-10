@@ -26,7 +26,7 @@ WORKDIR /app
 
 ENV     NODE_ENV production
 
-RUN     apk add gnupg && \
+RUN     apk add --no-cache gnupg && \
         addgroup --system --gid 1001 nodejs && \
         adduser --system --uid 1001 nextjs
 
