@@ -4,9 +4,9 @@ RUN     apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-COPY    package.json package-lock.json ./
+COPY    package.json ./
 
-RUN     npm ci
+RUN     npm install
 
 #####################################################################################################
 FROM    --platform=${TARGETPLATFORM} node:16-alpine AS builder
@@ -30,7 +30,7 @@ RUN     apk add --no-cache gnupg && \
         addgroup --system --gid 1001 nodejs && \
         adduser --system --uid 1001 nextjs
 
-COPY    --from=builder /app/public ./public
+COPY    --from=builder --chmod=644 /app/public ./public
 COPY    --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY    --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 

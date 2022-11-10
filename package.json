@@ -18,11 +18,10 @@
     "@mui/material": "^5.4.4",
     "@rjsf/core": "^4.0.1",
     "@rjsf/material-ui": "^4.0.1",
-    "next": "^13.0.2",
-    "react": "^18.2.0",
+    "next": "^12.3.3",
+    "react": "17.0.2",
     "react-data-table-component": "^7.4.6",
-    "react-dom": "^18.2.0",
-    "sharp": "^0.31.2",
+    "react-dom": "17.0.2",
     "styled-components": "^5.3.3"
   },
   "devDependencies": {
@@ -30,7 +29,7 @@
     "@types/react": "17.0.37",
     "autoprefixer": "^10.4.0",
     "eslint": "7.32.0",
-    "eslint-config-next": "^13.0.2",
+    "eslint-config-next": "^12.3.3",
     "postcss": "^8.4.4",
     "tailwindcss": "^2.2.19",
     "typescript": "4.5.2"
