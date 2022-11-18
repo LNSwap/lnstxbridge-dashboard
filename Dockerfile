@@ -34,6 +34,8 @@ COPY    --from=builder /app/public ./public
 COPY    --from=builder --chown=1000:1000 /app/.next/standalone ./
 COPY    --from=builder --chown=1000:1000 /app/.next/static ./.next/static
 
+COPY    README.md Dockerfile ./
+
 ENV     NEXT_PUBLIC_BACKEND_URL=http://localhost:9008
 
 EXPOSE  3000
