@@ -1,3 +1,4 @@
+#################### Stage 0 : Get deps ####################
 FROM    --platform=${TARGETPLATFORM} node:16-alpine AS deps
 
 RUN     apk add --no-cache libc6-compat
@@ -8,7 +9,7 @@ COPY    package.json ./
 
 RUN     npm install
 
-#####################################################################################################
+#################### Stage 1 : Builder ########################
 FROM    --platform=${TARGETPLATFORM} node:16-alpine AS builder
 
 WORKDIR /app
@@ -19,26 +20,24 @@ COPY    . .
 
 RUN     npm run build
 
-#####################################################################################################
+#################### Stage 2 : Runner ########################
 FROM    --platform=${TARGETPLATFORM} node:16-alpine AS runner
-
-WORKDIR /app
 
 ENV     NODE_ENV production
 
-RUN     apk add --no-cache gnupg && \
-        addgroup --system --gid 1001 nodejs && \
-        adduser --system --uid 1001 nextjs
+WORKDIR /app
 
-COPY    --from=builder --chmod=644 /app/public ./public
-COPY    --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY    --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+RUN     apk add --no-cache gnupg
 
-USER    nextjs
+COPY    --from=builder /app/public ./public
 
-ENV     NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:9008} \
-        PORT=3000
+COPY    --from=builder --chown=1000:1000 /app/.next/standalone ./
+COPY    --from=builder --chown=1000:1000 /app/.next/static ./.next/static
 
-EXPOSE  $PORT
+ENV     NEXT_PUBLIC_BACKEND_URL=http://localhost:9008
+
+EXPOSE  3000
+
+USER    1000
 
 CMD     ["node", "server.js"]
