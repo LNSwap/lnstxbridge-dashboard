@@ -83,7 +83,7 @@ const Swaps = (props : { swaps: SwapProps[] }) => {
     },
     {
       name: 'Transaction Id',
-      cell: (row: SwapProps) => row.lockupTransactionId ? <a className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" href={"https://explorer.stacks.co/txid/" + row.lockupTransactionId}>{row.lockupTransactionId.substring(0, 7) + "..."}</a> : null,
+      cell: (row: SwapProps) => row.lockupTransactionId ? <a className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" href={(row.lockupTransactionId?.startsWith('0x') ? "https://explorer.stacks.co/txid/" : "https://mempool.space/tx/") + row.lockupTransactionId} target="_blank" rel="noreferrer">{row.lockupTransactionId.substring(0, 7) + "..."}</a> : null,
       maxWidth: '500px',
       minWidth: '200px',
       sortable: true,

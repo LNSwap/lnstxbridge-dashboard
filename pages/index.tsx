@@ -13,19 +13,25 @@ const Home: NextPage = () => {
     reverseSwaps: ReverseSwapProps[]
     status: {minSTX: number, minBTC: number, overshootPct: number, autoBalance: boolean}
     lndWalletBalance: string
+    lndWalletBalanceBefore: string
     lndOnchainBalance: string
+    lndOnchainBalanceBefore: string
     exchangeBTCBalance: string
     exchangeSTXBalance: string
     stacksWalletBalance: {value: string, walletName: string, address: string}[]
+    stacksWalletBalanceBefore: string
   }>({
     swaps: [],
     reverseSwaps: [],
     status: {minSTX: 0, minBTC: 0, overshootPct: 0, autoBalance: false},
     lndWalletBalance : '',
+    lndWalletBalanceBefore: '',
     lndOnchainBalance: '',
+    lndOnchainBalanceBefore: '',
     exchangeBTCBalance: '',
     exchangeSTXBalance: '',
-    stacksWalletBalance : []
+    stacksWalletBalance: [],
+    stacksWalletBalanceBefore: ''
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -76,13 +82,14 @@ const Home: NextPage = () => {
   const getData = async () => {
       const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
       const headers = {headers: {'Authorization' : auth}};
+      
+      let post = {headers: {'Authorization' : auth}, method: 'POST', body: JSON.stringify({currency: 'BTC'})};
       const swaps: SwapProps[] = await fetch(apiurl + '/api/admin/swaps', headers ).then(res => res.json());
       const reverseSwaps: ReverseSwapProps[] = await fetch(apiurl + '/api/admin/swaps/reverse', headers).then(res => res.json());
       const status: {minSTX: number, minBTC: number, overshootPct: number, autoBalance: boolean} = await fetch(apiurl + '/api/admin/balancer/status', headers).then(res => res.json());
       const lndWalletBalance: string = await fetch(apiurl + '/api/admin/lnd/balance/offchain', headers).then(res => res.json());
       const stacksWalletBalances: {value: string, walletName: string, address: string}[] = await fetch(apiurl + '/api/admin/stacks/balance', headers).then(res => res.json());
       const lndOnchainBalance: string = await fetch(apiurl + '/api/admin/lnd/balance/onchain', headers).then(res => res.json());
-      let post = {headers: {'Authorization' : auth}, method: 'POST', body: JSON.stringify({currency: 'BTC'})};
       const exchangeAllBalances = await fetch(apiurl + '/api/admin/balancer/balances', post).then(res => res.json());
       // console.log('exchangeAllBalances ', exchangeAllBalances);
       let exchangeBTCBalance = '0';
@@ -91,13 +98,24 @@ const Home: NextPage = () => {
         exchangeBTCBalance = (exchangeAllBalances.find((item: { currency: string; }) => item.currency === 'BTC')).available;
         exchangeSTXBalance = (exchangeAllBalances.find((item: { currency: string; }) => item.currency === 'STX')).available;
       }
+
+      // get balances 24h ago
+      let beforeHeaders = {headers: {'Authorization' : auth, 'Content-Type': 'application/json'}, method: 'POST', body: JSON.stringify({symbol: 'LN', interval: 86400})};
+      const lndWalletBalanceBefore: string = await fetch(apiurl + '/api/admin/balance', beforeHeaders).then(res => res.json());
+      beforeHeaders = {headers: {'Authorization' : auth, 'Content-Type': 'application/json'}, method: 'POST', body: JSON.stringify({symbol: 'BTC', interval: 86400})};
+      const lndOnchainBalanceBefore: string = await fetch(apiurl + '/api/admin/balance', beforeHeaders).then(res => res.json());
+      beforeHeaders = {headers: {'Authorization' : auth, 'Content-Type': 'application/json'}, method: 'POST', body: JSON.stringify({symbol: 'STX', interval: 86400})};
+      const stacksWalletBalanceBefore: string = await fetch(apiurl + '/api/admin/balance', beforeHeaders).then(res => res.json());
       return {
           swaps: swaps,
           reverseSwaps: reverseSwaps,
           status: status,
           lndWalletBalance: lndWalletBalance,
+          lndWalletBalanceBefore: lndWalletBalanceBefore,
           stacksWalletBalance: stacksWalletBalances,
+          stacksWalletBalanceBefore: stacksWalletBalanceBefore,
           lndOnchainBalance: lndOnchainBalance,
+          lndOnchainBalanceBefore: lndOnchainBalanceBefore,
           exchangeBTCBalance: exchangeBTCBalance,
           exchangeSTXBalance: exchangeSTXBalance,
       }
@@ -322,12 +340,12 @@ const Home: NextPage = () => {
                   </div>
 
                   <div className="w-full grid grid-cols-3 gap-4">
-                    <Card status={dashboardData.lndWalletBalance} name="Lightning"/>
-                    <Card status={dashboardData.lndOnchainBalance} name="Onchain"/>
+                    <Card status={dashboardData.lndWalletBalance} before={dashboardData.lndWalletBalanceBefore} name="Lightning"/>
+                    <Card status={dashboardData.lndOnchainBalance} before={dashboardData.lndOnchainBalanceBefore} name="Onchain"/>
                     {
                       dashboardData.stacksWalletBalance ?
                         dashboardData.stacksWalletBalance.map(item => {
-                          return <Card key={item.walletName} status={Number(item.value)/10**6} name={item.walletName} address={item.address}/>
+                          return <Card key={item.walletName} before={item.walletName === 'STX' ? Number(dashboardData.stacksWalletBalanceBefore)/10**6 : ''} status={Number(item.value)/10**6} name={item.walletName} address={item.address}/>
                         })
                       : null
                     }
