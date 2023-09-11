@@ -16,7 +16,7 @@ const Card = (props: any) => {
       {props.address &&
         <a
           className="inline-flex items-center h-8 px-4 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"
-          href={"https://explorer.stacks.co/address/" + props.address}
+          href={"https://explorer.stacks.co/address/" + props.address + "?chain=" + props.network}
           target="_blank" rel="noreferrer">Explorer</a>
       }
     </div>

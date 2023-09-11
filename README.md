@@ -31,7 +31,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ### Optimizations & Requirements
 
 * To avoid error: `System limit for number of file watchers reached`  
->echo fs.inotify.max_user_watches= 131070 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+>echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
 * if you're running dashboard on a VM, you probably want to set below in your ~/.bashrc replace IP:port with your own providerUrl
 > export NEXT_PUBLIC_BACKEND_URL="http://34.132.87.225:9008"  
+
+* if you're running on testnet, set below env var so links resolve to correct explorers.
+> export NEXT_PUBLIC_NETWORK="testnet" 

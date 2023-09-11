@@ -43,6 +43,7 @@ const Home: NextPage = () => {
   const [pairId, setPairId] = useState('BTC/STX');
   const [amount, setAmount] = useState(0);
   const [apiurl, setApiurl] = useState(process.env.NEXT_PUBLIC_BACKEND_URL);
+  const [network, setNetwork] = useState(process.env.NEXT_PUBLIC_NETWORK || 'mainnet');
 
   const triggerBalance = async () => {
     const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
@@ -345,7 +346,7 @@ const Home: NextPage = () => {
                     {
                       dashboardData.stacksWalletBalance ?
                         dashboardData.stacksWalletBalance.map(item => {
-                          return <Card key={item.walletName} before={item.walletName === 'STX' ? Number(dashboardData.stacksWalletBalanceBefore)/10**6 : ''} status={Number(item.value)/10**6} name={item.walletName} address={item.address}/>
+                          return <Card key={item.walletName} before={item.walletName === 'STX' ? Number(dashboardData.stacksWalletBalanceBefore)/10**6 : ''} status={Number(item.value)/10**6} name={item.walletName} address={item.address} network={network}/>
                         })
                       : null
                     }
