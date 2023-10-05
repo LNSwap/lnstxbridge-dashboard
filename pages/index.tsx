@@ -5,6 +5,13 @@ import ReverseSwaps, {ReverseSwapProps} from "../components/reverseSwaps";
 import Card from "../components/card";
 import React, {useEffect, useState} from "react";
 import Image from "next/image";
+import axios from 'axios';
+import { RateLimiter } from "limiter";
+import { callReadOnlyFunction, bufferCV, cvToJSON } from "@stacks/transactions";
+import { StacksMainnet, StacksTestnet } from '@stacks/network';
+
+// hiro rate-limit is 100 requests per 1 minute on testnet, 5x on mainnet
+const limiter = new RateLimiter({ tokensPerInterval: 1, interval: 600 / ((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? 5 : 1)});
 
 const Home: NextPage = () => {
 
@@ -37,6 +44,7 @@ const Home: NextPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [auth, setAuth] = useState('');
   const [loggedIn, setLoggedIn] = useState(false);
   const [balanceStatus, setBalanceStatus] = useState('');
   const [balanceResult, setBalanceResult] = useState('');
@@ -44,6 +52,7 @@ const Home: NextPage = () => {
   const [amount, setAmount] = useState(0);
   const [apiurl, setApiurl] = useState(process.env.NEXT_PUBLIC_BACKEND_URL);
   const [network, setNetwork] = useState(process.env.NEXT_PUBLIC_NETWORK || 'mainnet');
+  const [activeNetwork, setActiveNetwork] = useState((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? new StacksMainnet() : new StacksTestnet());
 
   const triggerBalance = async () => {
     const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
@@ -75,6 +84,8 @@ const Home: NextPage = () => {
       if(localStorage.getItem('username') && localStorage.getItem('password')) {
         setUsername(localStorage.getItem('username')!);
         setPassword(localStorage.getItem('password')!);
+        const auth = 'Basic ' + Buffer.from(localStorage.getItem('username')! + ':' + localStorage.getItem('password')!).toString('base64');
+        setAuth(auth);
         setLoggedIn(true);
       }
     }
@@ -107,6 +118,34 @@ const Home: NextPage = () => {
       const lndOnchainBalanceBefore: string = await fetch(apiurl + '/api/admin/balance', beforeHeaders).then(res => res.json());
       beforeHeaders = {headers: {'Authorization' : auth, 'Content-Type': 'application/json'}, method: 'POST', body: JSON.stringify({symbol: 'STX', interval: 86400})};
       const stacksWalletBalanceBefore: string = await fetch(apiurl + '/api/admin/balance', beforeHeaders).then(res => res.json());
+      
+      // check for stuck refunds
+      for (let index = 0; index < swaps.length; index++) {
+        const swap = swaps[index];
+        if (swap.asLockupAddress) {
+          // check if any funds stuck in htlcs
+          const response = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/address/${swap.asLockupAddress}/utxo`)
+          if (response.data.length > 0) {
+            swap.refundable = true
+          }
+        }
+      }
+
+      for (let index = 0; index < reverseSwaps.length; index++) {
+        const reverseSwap = reverseSwaps[index];
+        // console.log('reverseSwap ', reverseSwap)
+        if (reverseSwap.preimageHash) {
+          // check if any funds stuck in htlcs
+          const remainingMessages = await limiter.removeTokens(1);
+          // console.log('remainingMessages ', remainingMessages)
+          const response = await stacksCheckSwapExists(reverseSwap.preimageHash, reverseSwap.lockupAddress);
+          if (response.amount) {
+            console.log('2response ', reverseSwap.id, reverseSwap.preimageHash, response.data);
+            reverseSwap.refundable = true
+          }
+        }
+      }
+
       return {
           swaps: swaps,
           reverseSwaps: reverseSwaps,
@@ -122,6 +161,33 @@ const Home: NextPage = () => {
       }
   };
 
+  const stacksCheckSwapExists = async (pHash: string, stacksSwapContract: string) => {
+    const contractAddress = stacksSwapContract.toUpperCase().split('.')[0];
+    const contractName = stacksSwapContract.split('.')[1];
+    const functionName = 'getSwap';
+    const preimageHash = bufferCV(Buffer.from(pHash, 'hex'));
+    const network = activeNetwork;
+    const senderAddress = contractAddress;
+    
+    const options = {
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs: [preimageHash],
+      network,
+      senderAddress,
+    };
+    
+    try {
+      const result = await callReadOnlyFunction(options);
+      console.log('stacksCheckSwapExists result ', cvToJSON(result).value.value)
+      return cvToJSON(result)?.value?.value;
+    } catch(e) {
+      // console.log('stacksCheckSwapExists error ', e)
+      return {amount: 0, data: 'error'};
+    }
+  }
+
   const logOut = () => {
     localStorage.clear();
     window.location.href = "/";
@@ -136,6 +202,8 @@ const Home: NextPage = () => {
   const login = () => {
     localStorage.setItem('username', username);
     localStorage.setItem('password', password);
+    const auth = 'Basic ' + Buffer.from(localStorage.getItem('username')! + ':' + localStorage.getItem('password')!).toString('base64');
+    setAuth(auth);
     setLoggedIn(true);
   }
 
@@ -358,8 +426,8 @@ const Home: NextPage = () => {
               </div>
               <div className="pt-6 px-4">
                 <div className="w-full grid grid-cols-1 xl:grid-cols-1 2xl:grid-cols-1 gap-4">
-                  <Swaps swaps={dashboardData.swaps}/>
-                  <ReverseSwaps reverseSwaps={dashboardData.reverseSwaps}/>
+                  <Swaps swaps={dashboardData.swaps} apiurl={apiurl || ''} auth={auth || ''} />
+                  <ReverseSwaps reverseSwaps={dashboardData.reverseSwaps} apiurl={apiurl} auth={auth || ''} />
                 </div>
               </div>
             </main>
