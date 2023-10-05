@@ -11,7 +11,12 @@ import { callReadOnlyFunction, bufferCV, cvToJSON } from "@stacks/transactions";
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 
 // hiro rate-limit is 100 requests per 1 minute on testnet, 5x on mainnet
-const limiter = new RateLimiter({ tokensPerInterval: 1, interval: 600 / ((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? 5 : 1)});
+// / ((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? 5 : 1)
+const hiroLimiter = new RateLimiter({ tokensPerInterval: 1, interval: 100 });
+
+// mempool.space rate-limits too - 13 requests per min
+const msLimiter = new RateLimiter({ tokensPerInterval: 1, interval: 7500 / ((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? 5 : 1)});
+
 
 const Home: NextPage = () => {
 
@@ -52,7 +57,7 @@ const Home: NextPage = () => {
   const [amount, setAmount] = useState(0);
   const [apiurl, setApiurl] = useState(process.env.NEXT_PUBLIC_BACKEND_URL);
   const [network, setNetwork] = useState(process.env.NEXT_PUBLIC_NETWORK || 'mainnet');
-  const [activeNetwork, setActiveNetwork] = useState((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? new StacksMainnet() : new StacksTestnet());
+  const [activeNetwork, setActiveNetwork] = useState((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? new StacksMainnet({ url: 'http://api.lnswap.org:3999' }) : new StacksTestnet());
 
   const triggerBalance = async () => {
     const auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
@@ -118,25 +123,29 @@ const Home: NextPage = () => {
       const lndOnchainBalanceBefore: string = await fetch(apiurl + '/api/admin/balance', beforeHeaders).then(res => res.json());
       beforeHeaders = {headers: {'Authorization' : auth, 'Content-Type': 'application/json'}, method: 'POST', body: JSON.stringify({symbol: 'STX', interval: 86400})};
       const stacksWalletBalanceBefore: string = await fetch(apiurl + '/api/admin/balance', beforeHeaders).then(res => res.json());
-      
-      // check for stuck refunds
-      for (let index = 0; index < swaps.length; index++) {
-        const swap = swaps[index];
-        if (swap.asLockupAddress) {
-          // check if any funds stuck in htlcs
-          const response = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/address/${swap.asLockupAddress}/utxo`)
-          if (response.data.length > 0) {
-            swap.refundable = true
-          }
-        }
-      }
+
+      // TODO: bitcoin balance check disabled until I can come up with a solution
+      // - local mempool instance OR some other hosted API
+      // // check for stuck refunds
+      // for (let index = 0; index < swaps.length; index++) {
+      //   const swap = swaps[index];
+      //   if (swap.asLockupAddress) {
+      //     await msLimiter.removeTokens(1);
+      //     // check if any funds stuck in htlcs
+      //     const response = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/address/${swap.asLockupAddress}/utxo`)
+      //     if (response.data.length > 0) {
+      //       swap.refundable = true
+      //     }
+      //   }
+      // }
 
       for (let index = 0; index < reverseSwaps.length; index++) {
         const reverseSwap = reverseSwaps[index];
-        // console.log('reverseSwap ', reverseSwap)
+        if (!reverseSwap.lockupAddress?.includes('.stxswap_v10')) continue;
+        console.log('checking reverseSwap ', reverseSwap.id)
         if (reverseSwap.preimageHash) {
           // check if any funds stuck in htlcs
-          const remainingMessages = await limiter.removeTokens(1);
+          const remainingMessages = await hiroLimiter.removeTokens(1);
           // console.log('remainingMessages ', remainingMessages)
           const response = await stacksCheckSwapExists(reverseSwap.preimageHash, reverseSwap.lockupAddress);
           if (response.amount) {
@@ -180,7 +189,8 @@ const Home: NextPage = () => {
     
     try {
       const result = await callReadOnlyFunction(options);
-      console.log('stacksCheckSwapExists result ', cvToJSON(result).value.value)
+      console.log('1stacksCheckSwapExists result ', result)
+      if (result.type === 9) return {};
       return cvToJSON(result)?.value?.value;
     } catch(e) {
       // console.log('stacksCheckSwapExists error ', e)
