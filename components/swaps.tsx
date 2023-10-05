@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, {useEffect} from 'react';
 import DataTable from 'react-data-table-component';
 
@@ -24,12 +25,14 @@ export interface SwapProps {
   lockupTransactionVout: number;
   createdAt: Date;
   updatedAt: Date;
+  asLockupAddress?: string;
+  refundable?: boolean;
 }
 
-const Swaps = (props : { swaps: SwapProps[] }) => {
+const Swaps = (props : { swaps: SwapProps[], apiurl: string, auth: string }) => {
 
   useEffect(() => {
-    // console.log(props.swaps);
+    console.log(props.swaps);
   }, [])
 
   const reverseSort = (rowA: SwapProps, rowB: SwapProps) => {
@@ -83,7 +86,14 @@ const Swaps = (props : { swaps: SwapProps[] }) => {
     },
     {
       name: 'Transaction Id',
-      cell: (row: SwapProps) => row.lockupTransactionId ? <a className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" href={(row.lockupTransactionId?.startsWith('0x') ? "https://explorer.stacks.co/txid/" : "https://mempool.space/tx/") + row.lockupTransactionId} target="_blank" rel="noreferrer">{row.lockupTransactionId.substring(0, 7) + "..."}</a> : null,
+      cell: (row: SwapProps) => row.lockupTransactionId ? <a className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" href={(row.lockupTransactionId?.startsWith('0x') ? `https://explorer.stacks.co/txid/${row.lockupTransactionId}?chain=${process.env.NEXT_PUBLIC_NETWORK || 'mainnet'}` : `https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/tx/${row.lockupTransactionId}`)} target="_blank" rel="noreferrer">{row.lockupTransactionId.substring(0, 7) + "..."}</a> : null,
+      maxWidth: '500px',
+      minWidth: '200px',
+      sortable: true,
+    },
+    {
+      name: 'Refundable',
+      cell: (row: SwapProps) => row.refundable ? <button className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" onClick={async () => triggerRefund(row)}>Refund</button> : null,
       maxWidth: '500px',
       minWidth: '200px',
       sortable: true,
@@ -134,6 +144,15 @@ const Swaps = (props : { swaps: SwapProps[] }) => {
     }
   ];
 
+  const triggerRefund = async (swap: SwapProps) => {
+    let beforeHeaders = {headers: {'Authorization' : props.auth, 'Content-Type': 'application/json'}, method: 'POST', body: JSON.stringify({id: swap.id})};
+    let refundType = 'bitcoin';
+    if (swap.lockupTransactionId?.startsWith('0x')) {
+      refundType = 'stacks';
+    }
+    const response: any = await fetch(`${props.apiurl}/api/admin/${refundType}/refund`, beforeHeaders).then(res => res.json());
+    console.log('triggerRefund ', response);
+  }
 
   return (
   <div className="bg-white shadow rounded-lg p-4 sm:p-6 xl:p-8  2xl:col-span-2">

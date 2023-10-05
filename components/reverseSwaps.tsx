@@ -28,6 +28,7 @@ export interface ReverseSwapProps {
   transactionVout: number;
   createdAt: Date;
   updatedAt: Date;
+  refundable?: boolean;
 }
 
 const ReverseSwaps = (props: any) => {
@@ -87,7 +88,14 @@ const ReverseSwaps = (props: any) => {
     },
     {
       name: 'Transaction Id',
-      cell: (row: ReverseSwapProps) => row.transactionId ? <a className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" href={"https://explorer.stacks.co/txid/" + row.transactionId} target="_blank" rel="noreferrer">{row.transactionId.substring(0, 7) + "..."}</a> : null,
+      cell: (row: ReverseSwapProps) => row.transactionId ? <a className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" href={`https://explorer.stacks.co/txid/${row.transactionId}?chain=${process.env.NEXT_PUBLIC_NETWORK || 'mainnet'}`} target="_blank" rel="noreferrer">{row.transactionId.substring(0, 7) + "..."}</a> : null,
+      maxWidth: '500px',
+      minWidth: '200px',
+      sortable: true,
+    },
+    {
+      name: 'Refundable',
+      cell: (row: ReverseSwapProps) => row.refundable ? <button className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800"  onClick={async () => triggerRefund(row)}>Refund</button> : null,
       maxWidth: '500px',
       minWidth: '200px',
       sortable: true,
@@ -138,6 +146,12 @@ const ReverseSwaps = (props: any) => {
     }
   ];
 
+  const triggerRefund = async (swap: ReverseSwapProps) => {
+    let beforeHeaders = {headers: {'Authorization' : props.auth, 'Content-Type': 'application/json'}, method: 'POST', body: JSON.stringify({id: swap.id})};
+    let refundType = 'stacks';
+    const response: any = await fetch(`${props.apiurl}/api/admin/${refundType}/refund`, beforeHeaders).then(res => res.json());
+    console.log('reverse triggerRefund ', response);
+  }
 
   return (
   <div className="bg-white shadow rounded-lg p-4 sm:p-6 xl:p-8  2xl:col-span-2">
