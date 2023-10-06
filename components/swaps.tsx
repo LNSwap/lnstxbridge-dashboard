@@ -27,6 +27,9 @@ export interface SwapProps {
   updatedAt: Date;
   asLockupAddress?: string;
   refundable?: boolean;
+  refundType?: string;
+  claimAddress?: string;
+  asLockupTransactionId?: string;
 }
 
 const Swaps = (props : { swaps: SwapProps[], apiurl: string, auth: string }) => {
@@ -93,7 +96,7 @@ const Swaps = (props : { swaps: SwapProps[], apiurl: string, auth: string }) => 
     },
     {
       name: 'Refundable',
-      cell: (row: SwapProps) => row.refundable ? <button className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" onClick={async () => triggerRefund(row)}>Refund</button> : null,
+      cell: (row: SwapProps) => row.refundable ? <button className="inline-flex items-center h-8 px-4 m-2 text-sm text-indigo-100 transition-colors duration-150 bg-indigo-700 rounded-lg focus:shadow-outline hover:bg-indigo-800" onClick={async () => triggerRefund(row)}>{ row.refundType ? 'Claim' : 'Refund'}</button> : null,
       maxWidth: '500px',
       minWidth: '200px',
       sortable: true,
@@ -145,12 +148,21 @@ const Swaps = (props : { swaps: SwapProps[], apiurl: string, auth: string }) => 
   ];
 
   const triggerRefund = async (swap: SwapProps) => {
-    let beforeHeaders = {headers: {'Authorization' : props.auth, 'Content-Type': 'application/json'}, method: 'POST', body: JSON.stringify({id: swap.id})};
-    let refundType = 'bitcoin';
+    let beforeHeaders = {
+      headers: {
+        'Authorization' : props.auth, 
+        'Content-Type': 'application/json'
+      }, 
+      method: 'POST', 
+      body: JSON.stringify({id: swap.id, type: swap.refundType}),
+    };
+    console.log('beforeHeaders ', swap, beforeHeaders);
+
+    let refundChain = 'bitcoin';
     if (swap.lockupTransactionId?.startsWith('0x')) {
-      refundType = 'stacks';
+      refundChain = 'stacks';
     }
-    const response: any = await fetch(`${props.apiurl}/api/admin/${refundType}/refund`, beforeHeaders).then(res => res.json());
+    const response: any = await fetch(`${props.apiurl}/api/admin/${refundChain}/refund`, beforeHeaders).then(res => res.json());
     console.log('triggerRefund ', response);
   }
 
