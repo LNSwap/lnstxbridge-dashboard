@@ -15,8 +15,11 @@ import { StacksMainnet, StacksTestnet } from '@stacks/network';
 const hiroLimiter = new RateLimiter({ tokensPerInterval: 1, interval: 100 });
 
 // mempool.space rate-limits too - 13 requests per min
-const msLimiter = new RateLimiter({ tokensPerInterval: 1, interval: 7500 / ((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? 5 : 1)});
+// const msLimiter = new RateLimiter({ tokensPerInterval: 1, interval: 7500 / ((process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? 5 : 1)});
+const msLimiter = new RateLimiter({ tokensPerInterval: 10, interval: "minute"});
 
+// LNSwap API rate-limiter
+const lnswapLimiter = new RateLimiter({ tokensPerInterval: 1, interval: 100 });
 
 const Home: NextPage = () => {
 
@@ -75,6 +78,7 @@ const Home: NextPage = () => {
     const baseurl = window.location.href.split(':')[1].split('/')[2];
     setApiurl(process.env.NEXT_PUBLIC_BACKEND_URL || `http://${baseurl}:9008`);
     console.log('backend IP: ', baseurl, process.env.NEXT_PUBLIC_BACKEND_URL || `http://${baseurl}:9008`, apiurl);
+    console.log('process.env ', process.env, process.env.NEXT_PUBLIC_STX_ADDRESS)
     if (loggedIn) {
       getData().then(data => {
         setDashboardData(data);
@@ -126,19 +130,150 @@ const Home: NextPage = () => {
 
       // TODO: bitcoin balance check disabled until I can come up with a solution
       // - local mempool instance OR some other hosted API
-      // // check for stuck refunds
-      // for (let index = 0; index < swaps.length; index++) {
-      //   const swap = swaps[index];
-      //   if (swap.asLockupAddress) {
-      //     await msLimiter.removeTokens(1);
-      //     // check if any funds stuck in htlcs
-      //     const response = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/address/${swap.asLockupAddress}/utxo`)
-      //     if (response.data.length > 0) {
-      //       swap.refundable = true
-      //     }
-      //   }
-      // }
+      // check for stuck refunds
+      const swapCounter = {
+        stuck: 0,
+        ulbwls: 0,
+        ulswpl: 0,
+        wlbuls: 0,
+        wlbuls2: 0,
+      }
+      for (let index = 0; index < swaps.length; index++) {
+        const swap = swaps[index];
+        if (!swap.lockupAddress?.includes('.stxswap_v10')) continue;
+        if (!swap.lockupTransactionId && swap.status === 'swap.expired') continue;
+        if (!swap.preimageHash) continue;
+        swapCounter.stuck++
 
+        // identify type of swap
+        if (
+          swap.pair === 'BTC/STX' &&
+          swap.orderSide === 1
+        ) {
+          swapCounter.ulbwls++
+          continue;
+          console.log('user locks BTC, LP lock STX, user claims STX or LP takes STX refund ', swap.id);
+        }
+
+        if (
+          swap.pair === 'BTC/STX' &&
+          swap.orderSide === 0 &&
+          swap.invoice?.includes('lnbc')
+        ) {
+          swapCounter.ulswpl++
+          // console.log('user locks STX, LP pay LN, LP claim STX ', swap.id);
+
+          // check if any funds stuck in htlcs
+          const remainingMessages = await hiroLimiter.removeTokens(1);
+          // console.log('remainingMessages ', remainingMessages)
+          const response = await stacksCheckSwapExists(swap.preimageHash, swap.lockupAddress);
+          if (response.amount) {
+            // console.log('ulswpl found: ', swap, response.data);
+            swap.refundable = true
+            swap.refundType = 'claim'
+          }
+        }
+
+        if (
+          swap.pair === 'BTC/STX' &&
+          swap.orderSide === 0 &&
+          swap.lockupTransactionId &&
+          swap.lockupTransactionVout != null &&
+          // swap.asLockupTransactionId &&
+          // swap.lockupTransactionId === swap.asLockupTransactionId &&
+          !swap.lockupTransactionId.includes('0x')
+        ) {
+          swapCounter.wlbuls++
+
+          // check if any funds stuck in htlcs
+          await lnswapLimiter.removeTokens(1);
+          const response = await axios.post(`${apiurl}/gettransactionout`, {
+            currency: "BTC",
+            transactionId: swap.lockupTransactionId,
+            index: swap.lockupTransactionVout
+          })
+          // const response = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/tx/${swap.lockupTransactionId}/outspend/${swap.lockupTransactionVout}`)
+          // console.log('tx is spent? ', `https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/tx/${swap.lockupTransactionId}/outspend/${swap.lockupTransactionVout}`, response.data )
+          if (response.data.transaction?.bestblock) {
+            // console.log('tx is NOT spent! ', swap, response.data.transaction )
+            swap.refundable = true
+          }
+
+          // // check if any funds stuck in htlcs
+          // await msLimiter.removeTokens(1);
+          // const response = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/tx/${swap.lockupTransactionId}/outspend/${swap.lockupTransactionVout}`)
+          // // console.log('tx is spent? ', `https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/tx/${swap.lockupTransactionId}/outspend/${swap.lockupTransactionVout}`, response.data )
+          // if (!response.data.spent) {
+          //   console.log('tx is NOT spent! ', swap, response.data )
+          //   swap.refundable = true
+          // }
+          // console.log('LP lock BTC, user locks STX, LP claim STX or LP take BTC refund', swap);
+          continue;
+        }
+
+        if (
+          swap.pair === 'BTC/STX' &&
+          swap.orderSide === 0 &&
+          swap.lockupTransactionId?.includes('0x') 
+          && 
+          !swap.invoice
+        ) {
+          swapCounter.wlbuls2++
+          console.log('LP lock BTC, user locks STX, LP claim STX or LP take BTC refund', swap);
+
+          // check if any funds stuck in htlcs
+          const remainingMessages = await hiroLimiter.removeTokens(1);
+          // console.log('remainingMessages ', remainingMessages)
+          const response = await stacksCheckSwapExists(swap.preimageHash, swap.lockupAddress);
+          if (response.amount) {
+            console.log('wlbuls2 found: ', swap, response.data);
+            swap.refundable = true
+            swap.refundType = 'claim'
+            continue;
+          }
+
+          // usually empty - can be disabled
+          await msLimiter.removeTokens(1);
+          const response2 = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/address/${swap.asLockupAddress}/utxo`)
+          if (response2.data.length > 0) {
+            console.log('239 address has balance! ', swap, response2.data )
+            swap.refundable = true
+          }
+          continue;
+          
+        }
+
+        // console.log('checking swap id ', swap.id, swap.pair, swap.orderSide, swap);
+
+        // // left for reference
+        // console.log('env ', process.env, )
+        // if (
+        //   swap.lockupTransactionId 
+        //   && swap.lockupAddress?.startsWith('3')
+        //   && swap.claimAddress === process.env.NEXT_PUBLIC_STX_ADDRESS || "SP13R6D5P5TYE71D81GZQWSD9PGQMQQN54A2YT3BY"
+        // ) {
+        //   await msLimiter.removeTokens(1);
+        //   // check if any funds stuck in htlcs
+        //   const response = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/tx/${swap.lockupTransactionId}/outspend/${swap.lockupTransactionVout}`)
+        //   console.log('tx is spent? ', `https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/tx/${swap.lockupTransactionId}/outspend/${swap.lockupTransactionVout}`, response.data )
+        //   if (!response.data.spent) {
+        //     console.log('tx is NOT spent! ', swap.id, response.data )
+        //     swap.refundable = true
+        //   }
+        // }
+
+        // // get lockupaddress balance method
+        // if (swap.asLockupAddress) {
+        //   await msLimiter.removeTokens(1);
+        //   // check if any funds stuck in htlcs
+        //   const response = await axios.get(`https://mempool.space${(process.env.NEXT_PUBLIC_NETWORK || 'mainnet') === 'mainnet' ? '' : '/testnet'}/api/address/${swap.asLockupAddress}/utxo`)
+        //   if (response.data.length > 0) {
+        //     swap.refundable = true
+        //   }
+        // }
+      }
+
+      // check reverseswaps
       for (let index = 0; index < reverseSwaps.length; index++) {
         const reverseSwap = reverseSwaps[index];
         if (!reverseSwap.lockupAddress?.includes('.stxswap_v10')) continue;
@@ -154,6 +289,8 @@ const Home: NextPage = () => {
           }
         }
       }
+
+      console.log('swapCounter ', swapCounter);
 
       return {
           swaps: swaps,
